@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="ru" xml:lang="ru">
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Installing RDS updates</title>
+</head>
+<body>
+
+<div class="text">
+<h1>Installing RDS updates with &laquo;RdsUnpack.exe&raquo;</h1>
+
+<p>Installing RDS updates with &laquo;<span class="file">RdsUnpack.exe</span>&raquo; is possible
+<span class="emph">only if</span> RDS is installed into the
+&laquo;<span class="file">My Documents</span>&raquo; folder or any other folder where any application
+and user can create
+and modify files without administrator's rights. If RDS is installed into
+&laquo;<span class="file">Program Files</span>&raquo; or some folder in &laquo;<span class="file">C</span>&raquo;
+root etc. then the update application will not be able to unpack and replace all necessary files.
+In this case the user should update RDS manually from the <span class="file">ZIP</span> packages
+provided by developers.</p>
+
+<h1>Steps to perform</h1>
+
+<p>1. Download the <a href="updatemodules_eng.html">necessary update files</a> 
+in &laquo;<span class="file">upd</span>&raquo; format and save them into the RDS install folder.</p>
+
+<p>By default all downloaded update files are automatically deleted after the successful update.
+If those files are needed for updating RDS on different computer they should be backed up manually
+before running the updater.</p>
+
+<p class="shift">2. <span class="emph">Close all running RDS instances.</span>
+The RDS executable files are locked while running so the updater will not be able to
+replace them with newer versions.</p>
+
+<p class="shift">3. Find &laquo;<span class="file">RdsUnpack.exe</span>&raquo; in the RDS
+install folder and run it.</p>
+
+<div class="pic"><div class="container">
+<img src="img/engExplorer1.png" width="559" height="366" alt="RdsUnpack.exe" />
+</div></div>
+
+<p class="shift">3.1. If the updater's main window is in Russian (or consists of
+lines of unreadable characters) then the RDS user interface should be forced to English
+language. It could be done by downloading the
+<a href="bin/ForceLanguage.ini" download
+title="ForceLanguage.ini, 23 b">language switcher file</a>
+and placing it into
+the RDS install folder where &laquo;RdsUnpack.exe&raquo; is also situated (the updater
+has to be restarted for the changes to take place). This file will be automatically deleted next time RDS starts but
+the user interface will stay English nevertheless until user changes
+it in RDS settings.</p>
+
+<p class="shift">4. The updater main window contains the list of all update files found
+in the RDS install folder. Besides the file names the items in this list can contain some remarks
+about each file contents. In the bottom left corner
+of the window there are two check boxes controlling the installation process:
+<ul>
+  <li>&laquo;Unpack newer files only&raquo; &ndash;  when checked the files in the update
+  package will replace existing RDS files only if the file version in the package
+  is newer.</li>
+  <li>&laquo;Delete update file after successful unpacking&raquo; &ndash;
+  when checked the update file will be automatically deleted upon the successful installation.
+  The file will not be deleted if any errors were detected.</li>
+</ul>
+
+<p class="noindent">Both check boxes are checked by default and it is recommended not to uncheck them.</p>
+
+<p>The &laquo;Unpack&raquo; button should be pressed to start the installation of the
+update files listed.</p>
+
+<div class="pic"><div class="container">
+<img src="img/engUnpack1i.png" width="696" height="480" alt="Updater window" />
+</div></div>
+
+<p class="shift">5. During the installation the updater window shows the unpack log with
+the names of all extracted files. If the update was installed successfully then the log is
+concluded with the &laquo;Unpack success&raquo; message and the program automatically exits
+in 10 seconds.</p>
+
+<div class="pic"><div class="container">
+<img src="img/engUnpack2.png" width="696" height="515" alt="Unpacking" />
+</div></div>
+
+<p class="shift">6. If the update was unsuccessful then the log will contain red error messages
+and the program window stays on screen. Those errors can have different reasons:</p>
+
+<ul>
+  <li>&laquo;Read error&raquo;, &laquo;Checksum error&raquo; &ndash;
+  the downloaded update file is probably corrupted or the <span class="file">&laquo;RdsUnpack.exe&raquo;</span>
+  version is too old. In this case the update file in question should be downloaded and installed again.
+  If it doesn't help then the RDS developers should be contacted for the new update package and
+  the newer version of <span class="file">&laquo;RdsUnpack.exe&raquo;</span>.</li>
+
+  <li>&laquo;Write error&raquo;, &laquo;Unable to set file write time&raquo;,
+  &laquo;Unable to copy temporary file&raquo;,
+  &laquo;Unable to create temporary file&raquo; &ndash;
+  some RDS instances are still running or RDS is installed into the folder without
+  full write rights for user and applications. It is necessary to close RDS and repeat the update. If it doesn't
+  help then RDS should be re-installed into the different folder (for example, into
+  the subfolder of &laquo;<span class="file">My Documents</span>&raquo;) or the updates should be unpacked
+  manually from developers' ZIP packages if RDS re-installation is not possible.</li>
+</ul>
+
+<div class="pic"><div class="container">
+<img src="img/engUnpack3.png" width="696" height="515" alt="Unpacking - errors" />
+</div></div>
+
+<p class="shift">7. It is strongly advised to scan the whole RDS installation folder for viruses after
+the update.</p>
+
+</div>
+
+<p class="bottom"><a href="index_en.html#light_unpack">Back</a></p>
+
+</body>
+</html>

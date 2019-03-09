@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<!--  ИПУ РАН, лаборатория 49, лаборатория 57  -->
+<html lang="ru" xml:lang="ru">
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="stylesheet" type="text/css" href="css/cpp.css" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <script type="text/javascript" src="script.js"></script>
+  <title>Технический сайт RDS (устаревший)</title>
+</head>
+<body onload="DocLoad()">
+<p class="top"><a href="index_en.html"><b>English</b></a></p>
+
+<div class="entry"><div class="container">
+<img src="img/RdsSplash.png" width="389" height="264" alt="Эмблема RDS" />
+</div></div>
+
+<div class="text">
+
+<p class="center"><b>Внимание! Технический сайт RDS теперь находится по адресу
+<a href="https://rds.rochinaa.pp.ru">https://rds.rochinaa.pp.ru</a>.<br />
+Здесь информация больше не обновляется.</b></p>
+
+<h1 class="inindex">Обновление RDS</h1>
+<ul>
+  <li class="shift"><a id="light_rdsget" href="rdsget.html">Инструкция по полуавтоматической загрузке и установке обновлений</a>
+  при помощи &laquo;RdsGet.exe&raquo;.</li>
+  
+  <li class="shift"><a id="light_updatemodules" href="updatemodules.html">Отдельные модули для программы
+  полуавтоматического обновления</a>.<br />
+  Список отдельных модулей обновления в формате &laquo;<span class="file">upd</span>&raquo;, 
+  автоматически загружаемых программой &laquo;RdsGet.exe&raquo;. При желании,
+  их можно загрузить вручную и установить при помощи &laquo;RdsUnpack.exe&raquo;.
+  </li>
+
+  <li class="shift"><a id="light_unpack" href="rdsunpack.html">Инструкция по ручной установке обновлений</a>
+  в формате &laquo;<span class="file">upd</span>&raquo; при помощи &laquo;RdsUnpack.exe&raquo;.</li>
+
+</ul>
+
+<h1 class="inindex">Дополнительные файлы</h1>
+<ul>
+
+  <li class="shift"><a href="bin/RdsUserExamples.zip">Примеры схем из описания
+  пользователя</a>:<br />
+  162.14 кб, архив &laquo;zip&raquo;. Примеры разбиты по папкам, каждая из
+  которых соответствует параграфу описания пользователя.</li>
+
+  <li class="shift"><a href="bin/RdsProgrExamples.zip">Примеры моделей и схем из руководства
+  программиста</a>:<br />
+  2.59 Мб, архив &laquo;zip&raquo;. Примеры разбиты по папкам, каждая из
+  которых соответствует параграфу руководства программиста. В архив с примерами также входят командные
+  файлы для компиляции моделей при помощи
+  <a href="http://openwatcom.org/">Open Watcom</a>
+  C++ (см. файл &laquo;_readme.txt&raquo; внутри архива).</li>
+
+  <li class="shift"><a href="bin/NetSplitSource.zip">Исходные тексты модуля
+  разбиения схемы для сети</a> (на 26.11.2017):<br />
+  38.47 кб, архив &laquo;zip&raquo;.
+  Исходные тексты <a href="netsplit.html">модуля расширения для разбиения схемы</a>, аналогичного
+  входящему в состав библиотеки &laquo;Common.dll&raquo;. В архив включены файлы для компиляции модуля
+  в <a href="http://openwatcom.org/">Open Watcom</a> C++, Borland C++ Builder 6 и
+  <a href="http://www.codeblocks.org/">Code::Blocks</a> с gcc
+  (см. файл &laquo;_readme.txt&raquo; внутри архива).</li>
+
+  <li class="shift"><a href="bin/SelToSysSource.zip">Исходные тексты примера модуля
+  перемещения выделенных блоков в подсистему</a> (на 25.04.2018, для RDS версии 1.0.538 или новее):<br />
+  69.92 кб, архив &laquo;zip&raquo;.
+  Исходные тексты примера модуля расширения и скомпилированная библиотека
+  в папке &laquo;bin\&raquo;. В архив включены файлы для компиляции модуля
+  в <a href="http://openwatcom.org/">Open Watcom</a> C++ и
+  <a href="http://www.codeblocks.org/">Code::Blocks</a> с gcc
+  (см. файл &laquo;_readme.txt&raquo; внутри архива). <b>Шины в данном примере
+  не поддерживаются.</b></li>
+</ul>
+
+<h1 class="inindex">Дополнительные тексты</h1>
+<p>Описания дополнений и изменений в RDS и моделях блоков, не вошедшие ни в описание пользователя,
+ни в руководство программиста, ни во встроенные справки по блокам.</p>
+<ul>
+  <li class="shift"><a id="light_translate" href="translate.html">Перевод текстов в схеме</a>
+  (начиная с версии 1.0.489).<br />
+  Описан интерфейс пользователя для выгрузки из схемы всех текстов в отдельный файл, который можно отдать
+  переводчику, и для загрузки переведенного файла обратно. Также описаны функции, вызовы которых программист
+  должен вставить в свои модели (не автокомпилируемые) для поддержки выгрузки/загрузки переводов внутренних
+  текстовых параметров блока.</li>
+
+  <li class="shift"><a href="kgmaps.html">Описание блоков когнитивных карт</a>.<br />
+  Рабочее описание на 20.09.2017 (текст).
+  Этот же текст есть в виде <a href="kgmaps.txt" download>файла</a> формата &laquo;txt&raquo;.</li>
+
+  <li class="shift"><a id="light_edittable" href="edittable.html">Таблицы в окнах настройки блоков</a>
+  (начиная с версии 1.0.491).<br />
+  Описан новый тип поля ввода &laquo;таблица&raquo;. Поля этого типа можно добавлять в окна настройки блоков,
+  создаваемых функцией <span class="cpp">rdsFORMCreate</span>. Окна настройки, создаваемые через интерфейс
+  редактора модели автокомпилируемых блоков, не поддерживают поля-таблицы.</li>
+
+  <li class="shift"><a id="light_netsplit" href="netsplit.html">Разбиение схемы для работы по сети</a>
+  (начиная с версии 1.0.498).<br />
+  Описывается <a href="bin/tool_splitsysnet.upd">экспериментальный модуль расширения</a>, позволяющий
+  выделить часть подсистем схемы в отдельную схему, которая будет связана с основной схемой по сети.</li>
+
+  <li class="shift"><a id="light_connwatch" href="connwatch.html">Обнаружение окончания переходных процессов</a>
+  (начиная с версии 1.0.509).<br />
+  Описывается механизм для обнаружения окончания переходных процессов в отдельных частях схемы, позволяющий
+  формировать сигналы готовности для управляющих блоков &ndash; например, внешних максимизаторов.</li>
+
+  <li class="shift"><a id="light_uitranslate" href="ui_translate.html">Перевод интерфейса пользователя</a>
+  (начиная с версии 1.0.524).<br />
+  Описываются функции для перевода интерфейса пользователя RDS и моделей блоков на другие языки.</li>
+
+  <li class="shift"><a id="light_classfilters" href="classfilters.html">Фильтры по классам</a>
+  (начиная с версии 1.0.582).<br />
+  Описывается создание и использование фильтров по классам блоков и связей, позволяющих
+  отображать в подсистемах только объекты, принадлежащие к заданным сочетаниям классов.</li>
+
+</ul>
+
+</div>
+
+
+</body>
+</html>

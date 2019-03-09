@@ -1,0 +1,2201 @@
+﻿<!DOCTYPE html>
+<html lang="ru" xml:lang="ru">
+<head>
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <link rel="stylesheet" type="text/css" href="css/cpp.css" />
+  <script type="text/javascript" src="script.js"></script>
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <title>Таблицы в окнах настройки блоков</title>
+</head>
+
+<body onload="DocLoad()">
+<p class="top"><a href="index.html#light_edittable">Назад</a></p>
+<div class="text">
+
+<h1>Таблицы в окнах настройки блоков</h1>
+
+<p>Начиная с версии 1.0.491, в окнах настройки блоков, создаваемых функцией <span class="cpp">rdsFORMCreate</span>
+(см. приложение А.5.28), можно использовать новый тип поля ввода &ndash; &laquo;таблица&raquo;. В версии
+1.0.500 добавлено несколько новых сервисных функций.</p>
+
+<div class="pic" id="pic1"><div class="container" id="light_pic1">
+<img src="img/FormTable.png" width="344" height="171" alt="Поле-таблица" />
+</div></div>
+
+<p>Таблица состоит из произвольного числа строк, которые могут добавляться, удаляться и перемещаться в процессе
+редактирования, и фиксированного, заданного при создании поля, числа столбцов. Ячейки таблицы адресуются
+номером строки и уникальным неотрицательным идентификатором столбца. Каждая строка таблицы может содержать невидимые
+пользователю ячейки, для обращения к которым вместо идентификатора столбца используются последовательные
+отрицательные числа, начиная с &minus;1.</p>
+
+<p>В ячейках таблицы либо автоматически выводятся хранящиеся в ней значения, либо функцией обратного вызова рисуются
+любые изображения (пример модели блока с рисованием ячеек таблицы приведен в <a href="#light_pex">3</a>.
+Таблица имеет отключаемую строку заголовка, в которой либо выводятся названия столбцов, либо, при необходимости,
+тоже программно рисуются изображения.</p>
+
+<p>Справа от таблицы находятся кнопки управления:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Кнопка</th>
+    <th>Действие</th>
+  </tr>
+  <tr>
+    <td class="allcenter"><img class="btn" src="img/Button_Plus.png" width="25" height="25" alt="Кнопка: плюс" /></td>
+    <td class="vcenter">Добавить строку через функцию обратного вызова.</td>
+  </tr>
+  <tr>
+    <td class="allcenter"><img class="btn" src="img/Button_ArrowUp.png" width="25" height="25" alt="Кнопка: вверх" /></td>
+    <td class="vcenter">Переместить строку на одну позицию вверх по списку.</td>
+  </tr>
+  <tr>
+    <td class="allcenter"><img class="btn" src="img/Button_ArrowDown.png" width="25" height="25" alt="Кнопка: вниз" /></td>
+    <td class="vcenter">Переместить строку на одну позицию вниз по списку.</td>
+  </tr>
+  <tr>
+    <td class="allcenter"><img class="btn" src="img/Button_properties.png" width="25" height="25" alt="Кнопка: свойства" /></td>
+    <td class="vcenter">Редактировать выбранную строку через функцию обратного вызова (вместо нажатия этой кнопки
+    можно просто дважды щелкнуть по строке в списке).</td>
+  </tr>
+  <tr>
+    <td class="allcenter"><img class="btn" src="img/Button_Delete.png" width="25" height="25" alt="Кнопка: удалить" /></td>
+    <td class="vcenter">Удалить строку из списка (функция обратного вызова может запретить удаление).</td>
+  </tr>
+</table>
+</div></div>
+
+<p>Состав кнопок определяется при создании таблицы. Рисование ячеек, реакция на кнопки
+добавления и редактирования строки, а также программное управление разрешением кнопок
+добавления и удаления выполняется в расширенной функции обратного вызова,
+поэтому открывать окно с таблицей следует функцией <span class="cpp">rdsFORMShowModalServ</span>
+(приложение А.5.28.7).</p>
+
+<p>По умолчанию параметры таблицы имеют следующие значения:</p>
+<ul>
+  <li><a href="#light_p5">высота таблицы</a> &ndash; автоматически (значение &minus;1),
+  т.е. таблица займет все оставшееся свободное место в окне или на вкладке;</li>
+  <li><a href="#light_p8">строка заголовка</a> &ndash; включена;</li>
+  <li>фиксированный (не прокручивающийся) <a href="#light_p9">первый столбец</a> &ndash; отключен;</li>
+  <li>кнопки управления &ndash; <a href="#light_p6">все видимы</a>,
+  <a href="#light_p7">всплывающих подсказок</a> нет;</li>
+  <li><a href="#light_p10">высота строки заголовка</a> &ndash; 18 точек;</li>
+  <li><a href="#light_p11">высота строки данных</a> &ndash; 18 точек;</li>
+  <li><a href="#light_p12">текст вместо пустой таблицы</a> &ndash; &laquo;(нет)&raquo;.</li>
+</ul>
+
+<div class="toc">
+<div class="level">
+  <p>Содержание:</p>
+  <div class="level">
+    <p><a href="#light_p0">1. Функции для работы с таблицей</a></p>
+    <div class="level">
+      <p><a href="#light_p1">1.1. Добавление поля-таблицы в окно</a></p>
+      <p><a href="#light_p2">1.2. Настройка параметров столбцов</a></p>
+      <p><a href="#light_p3">1.3. Запись и чтение значений ячеек</a></p>
+      <p><a href="#light_p4">1.4. Чтение числа строк </a></p>
+      <p><a href="#light_p5">1.5. Установка высоты всей таблицы</a></p>
+      <p><a href="#light_p6">1.6. Установка видимости кнопок управления</a></p>
+      <p><a href="#light_p7">1.7. Установка всплывающих подсказок к кнопкам управления</a></p>
+      <p><a href="#light_p8">1.8. Управление строкой заголовка</a></p>
+      <p><a href="#light_p9">1.9. Управление фиксированным столбцом</a></p>
+      <p><a href="#light_p10">1.10. Установка высоты строки заголовка</a></p>
+      <p><a href="#light_p11">1.11. Установка высоты строки данных</a></p>
+      <p><a href="#light_p12">1.12. Установка текста для пустой таблицы</a></p>
+      <p><a href="#light_p13">1.13. Удаление строки</a></p>
+      <p><a href="#light_p13a">1.14. Перемещение строки</a></p>
+      <p><a href="#light_p13b">1.15. Вставка строки в произвольное место</a></p>
+      <p><a href="#light_p13c">1.16. Чтение и установка текущей строки</a></p>
+      <p><a href="#light_p14">1.17. Команда перерисовки всей таблицы</a></p>
+      <p><a href="#light_p14_1">1.18. Установка списка отображения для ячейки</a> <span class="changes">(с версии 1.0.500)</span></p>
+      <p><a href="#light_p14_2">1.19. Установка способа добавления строк</a> <span class="changes">(с версии 1.0.500)</span></p>
+      <p><a href="#light_p14_3">1.20. Установка значения ячейки по умолчанию</a> <span class="changes">(с версии 1.0.500)</span></p>
+      <p><a href="#light_p14_4">1.21. Установка минимально допустимого числа строк</a> <span class="changes">(с версии 1.0.500)</span></p>
+      <p><a href="#light_p14_5">1.22. Задание собственной функции обратного вызова</a> <span class="changes">(с версии 1.0.500)</span></p>
+    </div>
+  <p><a href="#light_p15">2. Расширения функции обратного вызова</a></p>
+    <div class="level">
+      <p><a href="#light_p16">2.1. Новые поля в структуре <span class="cpp">RDS_FORMSERVFUNCDATA</span></a></p>
+      <p><a href="#light_p17">2.2. Реакция на кнопку добавления строки</a></p>
+      <p><a href="#light_p18">2.3. Реакция на кнопку удаления строки</a></p>
+      <p><a href="#light_p19">2.4. Реакция на кнопку редактирования строки</a></p>
+      <p><a href="#light_p20">2.5. Управление разрешенностью кнопок</a></p>
+      <p><a href="#light_p21">2.6. Реакция на смену текущей строки</a></p>
+    </div>
+  <p><a href="#light_pex">3. Пример модели блока с таблицей в настройках</a></p>
+  </div>
+
+</div>
+</div>
+
+<h1 id="light_p0">1. Функции для работы с таблицей</h1>
+
+<h2 id="light_p1">1.1. Добавление поля-таблицы в окно</h2>
+
+<p>Таблица, как и любое другое поле ввода, добавляется в окно при помощи функции <span class="cpp">rdsFORMAddEdit</span>
+(приложение А.5.28.2). В качестве типа поля в параметре <span class="cpp">Type</span> при этом используется
+новая константа <span class="cpp">RDS_FORMCTRL_TABLE</span>:</p>
+
+<pre class="cpp">  rdsFORMAddEdit(<i>окно</i>,<i>вкладка</i>,<i>идентификатор_поля</i>,<span class="changes">RDS_FORMCTRL_TABLE</span>|<i>флаги</i>,<i>заголовок</i>,<span class="const">0</span>);</pre>
+
+<p>Ширина поля здесь не используется &ndash; таблица всегда занимает всю ширину окна или вкладки,
+поэтому в последнем параметре функции можно передавать ноль.</p>
+
+<p>Настройка кнопок, заголовков, высоты таблицы, а также заполнение ее данными выполняется
+после ее добавления в окно.</p>
+
+<h2 id="light_p2">1.2. Настройка параметров столбцов</h2>
+
+<p>Чтобы в таблице что-то отображалось, необходимо после создания добавить в нее столбцы. Столбцы добавляются
+только один раз, последовательно, слева направо: сначала самый левый столбец, затем &ndash; столбец справа
+от него и т.д. Изменить состав или порядок уже добавленных столбцов нельзя.</p>
+
+<p>Для добавления столбца в таблицу используется функция <span class="cpp">rdsFORMTBLSetHeader</span>:</p>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetHeader(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    LPSTR Caption,   <span class="rem">// Текст заголовка столбца</span>
+    DWORD Flags,     <span class="rem">// Флаги (RDS_FORMTBLF_*)</span>
+    <span class="kw">int</span> Width        <span class="rem">// Ширина столбца</span>
+   );</pre>
+
+<p class="apphdr">Параметры функции</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span> (см. приложение А.5.28.1).</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">HdrId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Неотрицательный произвольный идентификатор столбца. По этому идентификатору осуществляется запись и чтение
+  ячеек этого столбца.</dd>
+
+  <dt><span class="cpp">Caption</span>&emsp;(<span class="cpp"><i>LPSTR</i></span>)</dt>
+  <dd>Текстовый заголовок столбца (отображается, только если в таблице включена строка заголовка).</dd>
+
+  <dt><span class="cpp">Flags</span>&emsp;(<span class="cpp"><i>DWORD</i></span>)</dt>
+  <dd>Набор объединенных битовым ИЛИ флагов, задающих параметры столбца:
+    <div class="tableleft"><div class="tcont">
+      <table class="list">
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_LEFT</span></td>
+          <td>Тексты в ячейках столбца выровнены по левому краю.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_CENTER</span></td>
+          <td>Тексты в ячейках столбца выровнены по центру.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_RIGHT</span></td>
+          <td>Тексты в ячейках столбца выровнены по правому краю.</td>
+        </tr>
+
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_HDRLEFT</span></td>
+          <td>Текст в заголовке столбца выровнен по левому краю.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_HDRCENTER</span></td>
+          <td>Текст в заголовке столбца выровнен по центру.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_HDRRIGHT</span></td>
+          <td>Текст в заголовке столбца выровнен по правому краю.</td>
+        </tr>
+
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_DRAW</span></td>
+          <td>Ячейки столбца рисуются программно функцией обратного вызова.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLF_HDRDRAW</span></td>
+          <td>Заголовок столбца рисуется программно функцией обратного вызова.</td>
+        </tr>
+      </table>
+    </div></div>
+    Флаги <span class="cpp">RDS_FORMTBLF_LEFT</span>, <span class="cpp">RDS_FORMTBLF_CENTER</span> и
+    <span class="cpp">RDS_FORMTBLF_RIGHT</span> &ndash; взаимоисключающие, из них может быть указан только один.
+    Флаги <span class="cpp">RDS_FORMTBLF_HDRLEFT</span>, <span class="cpp">RDS_FORMTBLF_HDRCENTER</span> и
+    <span class="cpp">RDS_FORMTBLF_HDRRIGHT</span> &ndash; тоже взаимоисключающие. Если установлен один из флагов
+    программного рисования, для отображения ячейки таблицы или заголовка столбца должна использоваться функция
+    обратного вызова. В этой функции нужно либо нарисовать ячейку или заголовок, либо отказаться от рисования &ndash;
+    тогда текст заголовка или ячейки будет выведен автоматически согласно флагам выравнивания.</dd>
+
+  <dt><span class="cpp">Width</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Ширина стольбца в точках экрана. Для одного из столбцов можно задать отрицательное число, тогда
+  ширина этого столбца будет автоматически подстраиваться под свободное место в таблице.</dd>
+</dl>
+
+<h2 id="light_p3">1.3. Запись и чтение значений ячеек</h2>
+
+<p>Для обращения к ячейке таблицы необходимо указать начинающийся с нуля номер строки и идентификатор
+столбца, который был присвоен ему в функции <span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>.
+Каждая строка таблицы, помимо видимых пользователю ячеек (их число определяется числом добавленных в таблицу столбцов),
+может содержать и невидимые ячейки, которые никак не отображаются, но сохраняют свои значения до тех пор,
+пока окно с таблицей существует. Для таких ячеек вместо идентификатора столбца указываются отрицательные числа:
+&minus;1, &minus;2 и т.д. Эти невидимые ячейки не нужно как-то специально &laquo;создавать&raquo; &ndash;
+ячейка создается в момент записи в нее значения. Поскольку в момент записи невидимой ячейки с индексом
+&minus;<i>N</i> автоматически создаются и ячейки с индексами от &minus;<i>N</i>+1 до &minus;1, для экономии
+памяти лучше не использовать слишком большие по модулю отрицательные индексы.</p>
+
+<p>Хотя значения всех ячеек таблицы хранятся в текстовом виде, читать и писать их можно не только как строки,
+но и как числа типов <span class="cpp">int</span> и <span class="cpp">double</span> &ndash; преобразование
+в текст и обратно при этом выполняется автоматически.</p>
+
+<p class="apphdr">Функции записи</p>
+
+<p>Для записи ячейки в таблицу можно использовать одну из следующих функций:</p>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetStr(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    LPSTR Value      <span class="rem">// Значение ячейки</span>
+   );</pre>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetInt(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    <span class="kw">int</span> Value        <span class="rem">// Значение ячейки</span>
+   );</pre>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetDouble(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    <span class="kw">double</span> Value     <span class="rem">// Значение ячейки</span>
+   );</pre>
+
+<p class="apphdr">Параметры функций</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span> (см. приложение А.5.28.1).</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">Index</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Номер строки, начинающийся с нуля. Если такой строки нет, она будет создана.</dd>
+
+  <dt><span class="cpp">HdrId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Идентификатор столбца, присвоенный ему при вызове <span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>,
+  или отрицательное число для невидимой ячейки.</dd>
+
+  <dt><span class="cpp">Value</span>&emsp;(<span class="cpp"><i>LPSTR, int или double</i></span>)</dt>
+  <dd>Значение, записываемое в ячейку (тип зависит от используемой функции).</dd>
+</dl>
+
+<p class="noindent">Для таблицы не предусмотрено какой-либо функции добавления строки: для того, чтобы добавить строку, достаточно
+просто начать записывать значения ее ячеек.</p>
+
+<p class="apphdr">Функции чтения</p>
+
+<p>Для чтения значений ячеек таблицы используются следующие функции (их основные параметры аналогичны параметрам
+функций записи):</p>
+
+<pre class="cpp">  LPSTR RDSCALL rdsFORMTBLGetStr(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    BOOL *pExists    <span class="rem">// Возвращаемый признак существования ячейки или NULL</span>
+   );</pre>
+
+<pre class="cpp">  <span class="kw">int</span> RDSCALL rdsFORMTBLGetInt(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    BOOL *pExists    <span class="rem">// Возвращаемый признак существования ячейки или NULL</span>
+   );</pre>
+
+<pre class="cpp">  <span class="kw">double</span> RDSCALL rdsFORMTBLGetDouble(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    BOOL *pExists    <span class="rem">// Возвращаемый признак существования ячейки или NULL</span>
+   );</pre>
+
+<p class="apphdr">Параметры функций</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">Index</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Номер строки, начинающийся с нуля.</dd>
+
+  <dt><span class="cpp">HdrId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Идентификатор столбца, присвоенный ему при вызове <span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>,
+  или отрицательное число для невидимой ячейки.</dd>
+
+  <dt><span class="cpp">pExists</span>&emsp;(<span class="cpp"><i>BOOL*</i></span>)</dt>
+  <dd>Указатель, по которому функция запишет <span class="cpp">TRUE</span>, если ячейка с таким
+  номером строки и идентификатором столбца (отрицательным номером для невидимой) существует,
+  и <span class="cpp">FALSE</span> &ndash; в противном случае. Если этот признак существования не нужен
+  вызвавшей программе, в <span class="cpp">pExists</span> можно передать <span class="cpp">NULL</span>.</dd>
+</dl>
+
+<p class="apphdr">Возвращаемые значения</p>
+
+<p>Функции возвращают значение запрошенной ячейки. Функция <span class="cpp">rdsFORMTBLGetStr</span> возвращает
+указатель на строку во внутренних данных таблицы (это не динамическая строка, ее не нужно освобождать). Если
+запрошенной ячейки не существует, возвращается пустая строка. Функции <span class="cpp">rdsFORMTBLGetInt</span> и
+<span class="cpp">rdsFORMTBLGetDouble</span> при обращении к отсутствующей ячейке возвращают нулевое
+значение.</p>
+
+<p class="apphdr">Дополнительная функция чтения вещественного значения</p>
+
+<p>Существует также функция <span class="cpp">rdsFORMTBLGetDoubleP</span>, возвращающая значение
+ячейки таблицы в виде вещественного числа через переданный указатель:</p>
+
+<pre class="cpp">  BOOL RDSCALL rdsFORMTBLGetDoubleP(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> Index,       <span class="rem">// Номер строки</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    <span class="kw">double</span> *pVal     <span class="rem">// Возвращаемое значение</span>
+   );</pre>
+
+<p>Значение ячейки, преобразованное в вещественное число (<span class="cpp">double</span>), записывается по
+указателю <span class="cpp">pVal</span>. При этом сама функция возвращает признак существования ячейки
+с запрошенным номером строки и идентификатором столбца.</p>
+
+<h2 id="light_p4">1.4. Чтение числа строк </h2>
+
+<p>Для чтения текущего числа строк в таблице используется общая функция <span class="cpp">rdsGetObjectInt</span>
+(приложение А.5.22.8) с параметром <span class="cpp">RDS_FORMVAL_TBLCOUNT</span>:</p>
+
+<pre class="cpp">  <span class="kw">int</span> Count=rdsGetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLCOUNT);</pre>
+
+<p class="apphdr">Параметры и результат</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">Count</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Число строк в таблице. Следует учитывать, что строка заголовка, даже если она включена, в число
+  строк таблицы не входит. Функция возвращает число строк данных.</dd>
+</dl>
+
+<h2 id="light_p5">1.5. Установка высоты всей таблицы</h2>
+
+<p>Для установки высоты таблицы в точках экрана используется общая функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TABLEHEIGHT</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TABLEHEIGHT,iHeight);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iHeight</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Высота таблицы в точках экрана или &minus;1, если таблица должна по высоте занять все оставшееся
+  свободное место в окне или на вкладке.</dd>
+</dl>
+
+<p class="noindent">По умолчанию таблица занимает все свободное место.</p>
+
+<h2 id="light_p6">1.6. Установка видимости кнопок управления</h2>
+
+<p>Кнопки управления расположены справа от таблицы (см. <a href="#pic1">рисунок</a>), они служат для добавления,
+удаления и сортировки строк в таблице, а также для вызова окна редактирования выбранной строки. При создании
+таблицы можно указать, какие именно их кнопок управления нужны. Для управления видимостью кнопок используется
+общая функция <span class="cpp">rdsSetObjectInt</span> (приложение А.5.22.11) с параметром,
+указывающим конкретную кнопку:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,iButton,iVisible);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iButton</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Одна из констант <span class="cpp">RDS_FORMVAL_TBLBTN_*</span>, указывающих, видимость какой именно
+  кнопки задается:
+    <div class="tableleft"><div class="tcont">
+      <table class="list">
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_ADD</span></td>
+          <td>Задается видимость кнопки добавления строки таблицы.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_UP</span>, <span class="cpp">RDS_FORMVAL_TBLBTN_DOWN</span></td>
+          <td>Задается видимость кнопок перемещения строки таблицы вверх или вниз.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_PROP</span></td>
+          <td>Задается видимость кнопки редактирования строки таблицы.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_DEL</span></td>
+          <td>Задается видимость кнопки удаления строки таблицы.</td>
+        </tr>
+      </table>
+    </div></div>
+  </dd>
+
+  <dt><span class="cpp">iVisible</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Устанавливаемый признак видимости: 1, если кнопка должна быть видима, или 0, если кнопку нужно скрыть.</dd>
+</dl>
+
+<p class="noindent">По умолчанию все кнопки видимы. Установить видимость кнопок перемещения строки вверх
+и вниз по отдельности нельзя: они будут или обе видимы, или обе скрыты.</p>
+
+<h2 id="light_p7">1.7. Установка всплывающих подсказок к кнопкам управления</h2>
+
+<p>Для установки всплывающих подсказок к кнопкам управления используется
+общая функция <span class="cpp">rdsSetObjectStr</span> (приложение А.5.22.12) с параметром,
+указывающим конкретную кнопку:</p>
+
+<pre class="cpp">  rdsSetObjectStr(Win,CtrlId,iButton,sHint);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iButton</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Одна из констант <span class="cpp">RDS_FORMVAL_TBLBTN_*</span>, указывающих, подсказка к какой именно
+  кнопке задается:
+    <div class="tableleft"><div class="tcont">
+      <table class="list">
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_ADD</span></td>
+          <td>Задается подсказка для кнопки добавления строки таблицы.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_UP</span></td>
+          <td>Задается подсказка для кнопки перемещения строки таблицы вверх.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_DOWN</span></td>
+          <td>Задается подсказка для кнопки перемещения строки таблицы вниз.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_PROP</span></td>
+          <td>Задается подсказка для кнопки редактирования строки таблицы.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMVAL_TBLBTN_DEL</span></td>
+          <td>Задается подсказка для кнопки удаления строки таблицы.</td>
+        </tr>
+      </table>
+    </div></div>
+  </dd>
+
+  <dt><span class="cpp">sHint</span>&emsp;(<span class="cpp"><i>LPSTR</i></span>)</dt>
+  <dd>Устанавливаемый текст полсказки. Если указать в этом параметре <span class="cpp">NULL</span>, кнопка будет
+  скрыта. Если нужно убрать подсказку для кнопки, не скрывая кнопку, следует передавать пустую строку.</dd>
+</dl>
+
+<p class="noindent">По умолчанию подсказок у кнопок нет.</p>
+
+<h2 id="light_p8">1.8. Управление строкой заголовка</h2>
+
+<p>В строке заголовка таблицы могут отображаться тексты заголовков столбцов, заданные при вызове функции
+<span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>, или
+произвольные изображения, рисуемые функцией обратного вызова. Если строка заголовка включена, она не
+участвует в прокрутке таблицы и всегда находится в ее верхней части.</p>
+
+<p>Для включения и выключения строки заголовка используется общая функция <span class="cpp">rdsSetObjectInt</span> (приложение А.5.22.11)
+с параметром <span class="cpp">RDS_FORMVAL_TBLHEADERS</span>, для чтения текущего ее состояния &ndash;
+функция <span class="cpp">rdsGetObjectInt</span> (приложение А.5.22.8) с тем же параметром:</p>
+
+<p class="apphdr">Вызов для установки</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLHEADERS,iOn);</pre>
+
+<p class="apphdr">Вызов для чтения</p>
+
+<pre class="cpp">  <span class="kw">int</span> iOn=rdsGetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLHEADERS);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iOn</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Признак видимости строки заголовка: 1 &ndash; включена, 0 &ndash; выключена.</dd>
+</dl>
+
+<p class="noindent">По умолчанию строка заголовка включена.</p>
+
+<h2 id="light_p9">1.9. Управление фиксированным столбцом</h2>
+
+<p>Самый левый столбец таблицы (первый из добавленных вызовом
+<span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>) может
+быть зафиксирован, чтобы он не участвовал в прокрутке таблицы и всегда находился в ее левой части.
+Этот столбец будет отображаться рельефным, и строки таблицы можно будет менять местами, &laquo;перетаскивая&raquo;
+их мышью за рельефную ячейку в этом столбце. Таблица, изображенная на <a href="#pic1">рисунке</a> выше,
+с фиксированным левым столбцом будет выглядеть так:</p>
+
+<div class="pic"><div class="container">
+<img src="img/FormTableFixCol.png" width="344" height="171" alt="Поле-таблица с фиксированным столбцом" />
+</div></div>
+
+<p>Значения для фиксированного столбца устанавливаются
+и считываются теми же <a class="hidden" href="#light_p3">функциями</a> ,что и для прочих столбцов.</p>
+
+<p>Для включения и выключения фиксированного столбца используется общая функция <span class="cpp">rdsSetObjectInt</span> (приложение А.5.22.11)
+с параметром <span class="cpp">RDS_FORMVAL_TBLFIXEDCOL</span>, для чтения текущего его состояния &ndash;
+функция <span class="cpp">rdsGetObjectInt</span> (приложение А.5.22.8) с тем же параметром:</p>
+
+<p class="apphdr">Вызов для установки</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLFIXEDCOL,iFixed);</pre>
+
+<p class="apphdr">Вызов для чтения</p>
+
+<pre class="cpp">  <span class="kw">int</span> iFixed=rdsGetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLFIXEDCOL);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iFixed</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Признак фиксированности левого столбца таблицы: 1 &ndash; фиксированный,
+  0 &ndash; обычный (прокручивающийся).</dd>
+</dl>
+
+<p class="noindent">По умолчанию фиксированный столбец выключен.</p>
+
+<h2 id="light_p10">1.10. Установка высоты строки заголовка</h2>
+
+<p>Для установки высоты строки заголовка таблицы (если она
+<a href="#light_p8">отображается</a>) в точках экрана используется общая
+функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLHDRHEIGHT</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLHDRHEIGHT,iHeight);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iHeight</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Высота строки заголовка.</dd>
+</dl>
+
+<p class="noindent">По умолчанию строка заголовка имеет высоту в 18 точек экрана.</p>
+
+<h2 id="light_p11">1.11. Установка высоты строки данных</h2>
+
+<p>Для установки высоты строки данных (т.е. обычной строки таблицы) в точках экрана используется общая
+функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLLINEHEIGHT</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLLINEHEIGHT,iHeight);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iHeight</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Высота строки.</dd>
+</dl>
+
+<p class="noindent">По умолчанию строка имеет высоту в 18 точек экрана.</p>
+
+
+<h2 id="light_p12">1.12. Установка текста для пустой таблицы</h2>
+
+<p>Если в таблице нет ни одной строки, сетка не отображается, и вместо нее по центру области таблицы
+выводится заданный текст. Этот текст можно установить при помощи общей функции
+<span class="cpp">rdsSetObjectStr</span> (приложение А.5.22.12) с параметром
+<span class="cpp">RDS_FORMVAL_TBLEMPTYTEXT</span>:
+
+<pre class="cpp">  rdsSetObjectStr(Win,CtrlId,RDS_FORMVAL_TBLEMPTYTEXT,sText);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">sText</span>&emsp;(<span class="cpp"><i>LPSTR</i></span>)</dt>
+  <dd>Текст, выводимый вместо пустой таблицы.</dd>
+</dl>
+
+<p class="noindent">По умолчанию вместо пустой таблицы выводится слово &laquo;(нет)&raquo;.</p>
+
+
+<h2 id="light_p13">1.13. Удаление строки</h2>
+
+<p>Для программного удаления из таблицы строки с заданным номером используется общая
+функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLDELLINE</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLDELLINE,iIndex);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iIndex</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Номер удаляемой строки (начиная с нуля).</dd>
+</dl>
+
+<p class="noindent">Кнопка удаления текущей строки, расположенная справа от таблицы, удаляет строку
+автоматически (если функция обратного вызова не запретит это удаление). Вызов <span class="cpp">rdsSetObjectInt</span>
+с параметром <span class="cpp">RDS_FORMVAL_TBLDELLINE</span> нужен только для программного удаления строки &ndash;
+например, при каких-то других действиях пользователя в окне настроек.</p>
+
+<h2 id="light_p13a">1.14. Перемещение строки</h2>
+
+<p>Для перемещения существующей строки таблицы в другую позицию используется сервисная функция
+<span class="cpp">rdsFORMTBLMoveLine</span>:</p>
+
+<pre class="cpp">  BOOL RDSCALL rdsFORMTBLMoveLine(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> OldIndex,    <span class="rem">// Номер перемещаемой строки</span>
+    <span class="kw">int</span> NewIndex     <span class="rem">// Новый номер строки</span>
+   );</pre>
+
+<p class="apphdr">Параметры функции</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span> (см. приложение А.5.28.1).</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">OldIndex</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Номер перемещаемой строки (начиная с нуля).</dd>
+
+  <dt><span class="cpp">NewIndex</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Новый номер строки, т.е. позиция, куда она перемещается (начиная с нуля).</dd>
+</dl>
+
+<p class="noindent">Функция возвращает <span class="cpp">TRUE</span>, если перемещение выполнено, и
+<span class="cpp">FALSE</span> в противном случае
+(при недопустимых или совпадающих индексах). Перемещение строк таблицы кнопками управления или
+<a href="#light_p9">&laquo;перетаскиванием&raquo; мышью</a> выполняется автоматически и
+не требует вызова этой функции. Функция нужна только для программного перемещения строк.</p>
+
+<h2 id="light_p13b">1.15. Вставка строки в произвольное место</h2>
+
+<p>Для программного добавления строки в заданную позицию таблицы используется общая
+функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLINSLINE</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLINSLINE,iIndex);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iIndex</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Номер строки (начиная с нуля), перед которой будет вставлена новая пустая строка.</dd>
+</dl>
+
+<p class="noindent">Для добавления строки в конец таблицы достаточно просто начать записывать данные
+в ячейки еще не существующей строки после последней, т.е. строки с номером, равным текущему числу строк таблицы. Эта
+функция вставляет пустую (все ячейки содержат пустые тексты) строку в произвольную позицию.</p>
+
+<h2 id="light_p13c">1.16. Чтение и установка текущей строки</h2>
+
+<p>Для чтения и установки номера текущей строки таблицы используются общие функции
+<span class="cpp">rdsGetObjectInt</span>
+(приложение А.5.22.8) и <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) соответственно с параметром <span class="cpp">RDS_FORMVAL_ITEMINDEX</span>:</p>
+
+<p class="apphdr">Вызов для чтения</p>
+
+<pre class="cpp">  <span class="kw">int</span> iIndex=rdsGetObjectInt(Win,CtrlId,RDS_FORMVAL_ITEMINDEX);</pre>
+
+<p class="apphdr">Вызов для установки</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_ITEMINDEX,iIndex);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iIndex</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Номер текущей строки таблицы (начиная с нуля).</dd>
+</dl>
+
+<p class="noindent">В расширенную <a href="#light_p15">функцию обратного вызова</a>, в которой обычно
+выполняются различные реакции на события, связанные с таблицей, номер текущей строки обычно
+передается в структуре <a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a>.
+Чтение и установка номера текущей строки при помощи описанных здесь функций может потребоваться только
+для управления таблицей снаружи, из реакций на события других полей окна настройки.</p>
+
+<h2 id="light_p14">1.17. Команда перерисовки всей таблицы</h2>
+
+<p>Обычно таблица в окне перерисовывается сама, когда это необходимо. В некоторых редких случаях может
+потребоваться перерисовать ее принудительно: например, если используется программное рисование ячеек
+таблицы, это рисование использует какие-то внешние данные, и эти внешние данные изменились. В этом случае
+следует вызвать функцию <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLREDRAW</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLREDRAW,<span class="const">0</span>);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+</dl>
+
+<h2 id="light_p14_1">1.18. Установка списка отображения для ячейки</h2>
+
+<p>Начиная с версии RDS 1.0.500 если значение ячейки в столбце
+таблицы представляет собой номер варианта из какого-либо списка, для
+этого столбца можно задать список отображения. При этом пользователь будет видеть в указанном столбце
+не числовые значения ячеек, а соответсвующие строки текста из заданного списка.
+Для задания списка
+используется сервисная функция <span class="cpp">rdsFORMTBLSetColTextList</span>:</p>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetColTextList(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    LPSTR List       <span class="rem">// Список вариантов</span>
+   );</pre>
+
+<p class="apphdr">Параметры функции</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span> (см. приложение А.5.28.1).</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">HdrId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Идентификатор столбца, присвоенный ему при вызове <span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>.</dd>
+
+  <dt><span class="cpp">List</span>&emsp;(<span class="cpp"><i>LPSTR</i></span>)</dt>
+  <dd>Список вариантов, разделенных кодом перевода строки &laquo;\n&raquo;. Варианты нумеруются
+  начиная с нуля, то есть значению &laquo;0&raquo; будет соответсвовать первая строка списка,
+  значению &laquo;1&raquo; &ndash; вторая и т.д.</dd>
+</dl>
+
+<p class="noindent">Если, например, ячейка таблицы в столбце <span class="cpp">HdrId</span> будет
+иметь значение &laquo;1&raquo;, и для этого столбца будет задан список
+&laquo;Первый\nВторой\nТретий\nЧетвертый&raquo;, то пользователь увидит в этой
+ячейке текст &laquo;Второй&raquo; (элемент списка с индексом 1).</p>
+
+<h2 id="light_p14_2">1.19. Установка способа добавления строк</h2>
+
+<p>По умолчанию при нажатии кнопки добавления строки вызывается
+<a href="#light_p17">функция обратного вызова
+модального окна</a> с параметром
+<span class="cpp">RDS_FORMVAL_TBLBTN_ADD</span>. В этой функции необходимо программно добавить строку
+в таблицу и, при необходимости, дать пользователю ввести значения для нее. Можно изменить это стандартное
+поведение так, чтобы строка в таблицу добавлялась автоматически, после чего вызывалась бы
+<a href="#light_p19">реакция на редактирование</a> этой строки. Всем ячейкам отображаемых столбцов
+в добавленной строке присваиваются заданные заранее
+<a href="#light_p14_3">значения по умолчанию</a>.</p>
+
+<p>Для задания способа добавления
+строк в таблицу используется функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLAUTOINS</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLAUTOINS,iType);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iType</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Одна из констант <span class="cpp">RDS_FORMTBLAI_*</span>, указывающих способ добавления строк:
+    <div class="tableleft"><div class="tcont">
+      <table class="list">
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLAI_NONE</span></td>
+          <td>Стандартное поведение &ndash; строка должна добавляться программно в функции
+          обратного вызова.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLAI_END</span></td>
+          <td>При нажатии пользователем кнопки добавления строки новая строка со значениями
+          по умолчанию добавляется в конец таблицы, после чего вызывается функция для ее
+          редактирования. Если в поле <span class="cpp">ButtonResult</span> переданной структуры
+          <span class="cpp"><a href="#light_p16">RDS_FORMSERVFUNCDATA</a></span> функция вернет
+          константу <span class="cpp">RDS_FORMSERVRESULT_NO</span>, добавление строки
+          будет отменено.</td>
+        </tr>
+        <tr>
+          <td class="term"><span class="cpp">RDS_FORMTBLAI_INS</span></td>
+          <td>При нажатии пользователем кнопки добавления строки новая строка со значениями
+          по умолчанию добавляется перед текущей строкой таблицы, после чего вызывается функция для ее
+          редактирования. Если в поле <span class="cpp">ButtonResult</span> переданной структуры
+          <span class="cpp">RDS_FORMSERVFUNCDATA</span> функция вернет
+          константу <span class="cpp">RDS_FORMSERVRESULT_NO</span>, добавление строки
+          будет отменено.</td>
+        </tr>
+      </table>
+    </div></div>
+    </dd>
+</dl>
+
+
+<h2 id="light_p14_3">1.20. Установка значения ячейки по умолчанию</h2>
+
+<p>Начиная с версии RDS 1.0.500 для отображаемого столбца таблицы можно установить значение по умолчанию,
+которое будет использоваться при <a href="#light_p14_2">автоматическом добавлении строки</a>.
+Для этого
+используется сервисная функция <span class="cpp">rdsFORMTBLSetColDefValue</span>:</p>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetColDefValue(
+    RDS_HOBJECT Win, <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,      <span class="rem">// Идентификатор поля (таблицы)</span>
+    <span class="kw">int</span> HdrId,       <span class="rem">// Идентификатор столбца</span>
+    LPSTR Value      <span class="rem">// Значение по умолчанию в текстовом виде</span>
+   );</pre>
+
+<p class="apphdr">Параметры функции</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span> (см. приложение А.5.28.1).</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">HdrId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Идентификатор столбца, присвоенный ему при вызове <span class="cpp"><a class="hidden" href="#light_p2">rdsFORMTBLSetHeader</a></span>.</dd>
+
+  <dt><span class="cpp">Value</span>&emsp;(<span class="cpp"><i>LPSTR</i></span>)</dt>
+  <dd>Значение ячейки данного столбца по умолчанию.</dd>
+</dl>
+
+
+<h2 id="light_p14_4">1.21. Установка минимально допустимого числа строк</h2>
+
+<p>Начиная с версии RDS 1.0.500 можно установить минимально допустимое число строк в таблице.
+Кнопка удаления строки будет разрешенной только в том случае, если число строк будет больше заданного.
+<span class="emph">Следует учитывать</span>, что этот параметр влияет только на разрешение кнопки удаления: программно строки
+можно удалить всегда, и, если исходное число строк в таблице меньше заданного минимального,
+дополнительные строки не добавляются автоматически.</p>
+
+<p>Для установки минимального числа строк
+используется функция <span class="cpp">rdsSetObjectInt</span>
+(приложение А.5.22.11) с параметром <span class="cpp">RDS_FORMVAL_TBLMINLINES</span>:</p>
+
+<pre class="cpp">  rdsSetObjectInt(Win,CtrlId,RDS_FORMVAL_TBLMINLINES,iMinCount);</pre>
+
+<p class="apphdr">Параметры</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span>.</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">iMinCount</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Минимально допустимое число строк в таблице или ноль для отмены этого ограничения.</dd>
+</dl>
+
+<p class="noindent">В расширенную <a href="#light_p15">функцию обратного вызова</a>, в которой обычно
+выполняются различные реакции на события, связанные с таблицей, номер текущей строки обычно
+передается в структуре <a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</a></span>.
+Чтение и установка номера текущей строки при помощи описанных здесь функций может потребоваться только
+для управления таблицей снаружи, из реакций на события других полей окна настройки.</p>
+
+<h2 id="light_p14_5">1.22. Задание собственной функции обратного вызова</h2>
+
+<p>Начиная с версии RDS 1.0.500 для таблицы можно указать собственную функцию обратного вызова, отличную
+от аналогичной функции всего окна. Обычно при любых действиях пользователя с таблицей вызывается общая
+для всех полей ввода данного окна функция (см. приложение А.5.28.7). Поскольку у таблицы много
+достаточно сложных реакций, а в окне может быть несколько таблиц, можно выделить все реакции конкретной
+таблицы в отдельную функцию. Для привязки отдельной функции к таблице
+используется сервисная функция <span class="cpp">rdsFORMTBLSetServFunc</span>:</p>
+
+<pre class="cpp">  <span class="kw">void</span> RDSCALL rdsFORMTBLSetServFunc(
+    RDS_HOBJECT Win,     <span class="rem">// Объект</span>
+    <span class="kw">int</span> CtrlId,          <span class="rem">// Идентификатор поля (таблицы)</span>
+    RDS_VHoFsfd ServFunc <span class="rem">// Указатель на функцию обратного вызова</span>
+   );</pre>
+
+<p class="apphdr">Параметры функции</p>
+
+<dl>
+  <dt><span class="cpp">Win</span>&emsp;(<span class="cpp"><i>RDS_HOBJECT</i></span>)</dt>
+  <dd>Идентификатор вспомогательного объекта для работы с модальным окном, ранее созданного функцией
+  <span class="cpp">rdsFORMCreate</span> (см. приложение А.5.28.1).</dd>
+
+  <dt><span class="cpp">CtrlId</span>&emsp;(<span class="cpp"><i>int</i></span>)</dt>
+  <dd>Целый идентификатор таблицы, присвоенный ей при вызове функции
+  <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</dd>
+
+  <dt><span class="cpp">ServFunc</span>&emsp;(<span class="cpp"><i>указатель на функцию: RDS_VHoFsfd</i></span>)</dt>
+  <dd>Указатель на функцию, которую нужно вызывать в ответ на любые события, связанные с таблицей
+  <span class="cpp">CtrlId</span>, или <span class="cpp">NULL</span>,
+  если нужно вернуть вызов общей функции окна. Функция обратного вызова имеет такой же вид,
+  как и обычная функция окна:<br />
+  <pre class="cpp">  <span class="kw">void</span> RDSCALL <i>имя_функции</i>(RDS_HOBJECT win,<a class="hidden" href="#light_p16">RDS_PFORMSERVFUNCDATA</a> pdata);</pre>
+  В параметре <span class="cpp">win</span> этой функции передается идентификатор вспомогательного объекта-окна,
+  в котором находится таблица, а в параметре <span class="cpp">pdata</span> &ndash; указатель на структуру
+  <a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</a></span>, описывающую произошедшее событие.
+  </dd>
+</dl>
+
+<p class="noindent">Функция обратного вызова таблицы технически ничем не отличается от функции обратного вызова окна.
+Если функция привязана только к одной таблице в окне, то в ней можно не проверять идентификатор объекта
+в поле <span class="cpp">CtrlId</span> переданной структуры: оно всегда будет содержать идентификатор
+таблицы, к которой привязана функция.
+<span class="emph">Следует учитывать</span>, что DLL, содержащая функцию, на момент открытия
+окна с таблицей должна находиться в памяти, иначе возникнет критическая ошибка. Если окно открывается из
+модели блока, это условие выполняется автоматически, поскольку все функции вместе
+с этой моделью находятся в одной и той же DLL.</p>
+
+<h1 id="light_p15">2. Расширения функции обратного вызова</h1>
+
+<h2 id="light_p16">2.1. Новые поля в структуре <span class="cpp">RDS_FORMSERVFUNCDATA</span></h2>
+
+<p>Для поддержки реакции на кнопки добавления и удаления строк таблицы и программного рисования ячеек
+в структуру <span class="cpp">RDS_FORMSERVFUNCDATA</span> (приложение А.4.10), используемую в
+расширенной функции обратного вызова окна настроек, открываемого вызовом
+<span class="cpp">rdsFORMShowModalServ</span> (приложение А.5.28.7), добавлено несколько новых полей.
+Следует учитывать, что при открытии окна настроек функцией <span class="cpp">rdsFORMShowModalEx</span>
+реакции полей-таблиц не поддерживаются.</p>
+
+<p>Новые поля в структуре <span class="cpp">RDS_FORMSERVFUNCDATA</span> выделены
+<span class="changes">цветом</span>:</p>
+
+<pre class="cpp">  <span class="kw">typedef</span> <span class="kw">struct</span> {
+    <span class="kw">int</span> Event;        <span class="rem">// Событие (RDS_FORMSERVEVENT_*)</span>
+    <span class="kw">int</span> CtrlId;       <span class="rem">// Идентификатор органа управления</span>
+    <span class="rem">// Для RDS_FORMSERVEVENT_DRAW</span>
+    HDC dc;           <span class="rem">// Контекст устройства для рисования (WinAPI)</span>
+    <span class="kw">int</span> Left,Top;     <span class="rem">// Верхний левый угол зоны рисования</span>
+    <span class="kw">int</span> Width,Height; <span class="rem">// Размеры зоны рисования</span>
+
+<div class="changes">    <span class="rem">// Дополнительно для полей-таблиц</span>
+    <span class="kw">int</span> TableRow,TableCol;<span class="rem">// Номер строки и столбца (если используется),</span>
+                          <span class="rem">// для строки заголовка TableRow==-1</span>
+    <span class="kw">int</span> ColId;            <span class="rem">// Идентификатор столбца таблицы (только при рисовании таблицы)</span>
+    LPSTR CellValue;      <span class="rem">// Значение ячейки таблицы (только при рисовании таблицы)</span>
+    COLORREF BGColor,FGColor; <span class="rem">// Цвета фона и текста текущей ячейки таблицы (только при рисовании таблицы)</span>
+    <span class="kw">int</span> CellAlignment;    <span class="rem">// Выравнивание ячейки таблицы</span>
+    BOOL DefaultTableDraw;<span class="rem">// При рисовании устанавливается в реакции в TRUE,</span>
+                          <span class="rem">// если нужно нарисовать ячейку таблицы по умолчанию</span>
+
+    <span class="rem">// Для RDS_FORMSERVEVENT_TBLBUTTON и RDS_FORMSERVEVENT_TBLBTNENABLE</span>
+    <span class="rem">// (для указания строки таблицы, если нужно, используется TableRow)</span>
+    <span class="kw">int</span> Button;           <span class="rem">// Кнопка (RDS_FORMVAL_TBLBTN_*)</span>
+    <span class="kw">int</span> ButtonResult;     <span class="rem">// Результат (зависит от кнопки)</span>
+      <span class="preproc">#define RDS_FORMSERVRESULT_OK       1       </span><span class="rem">// Нормальное завершение</span>
+      <span class="preproc">#define RDS_FORMSERVRESULT_NO       0       </span><span class="rem">// Отмена действия</span>
+    <span class="kw">int</span> IndexAfterButton; <span class="rem">// Новый индекс строки, который нужно установить после реакции, или -1</span></div>
+  } RDS_FORMSERVFUNCDATA;
+  <span class="kw">typedef</span> RDS_FORMSERVFUNCDATA *RDS_PFORMSERVFUNCDATA;</pre>
+
+<p>Не все эти поля используются во всех реакциях на события, происходящие с таблицей (эти события
+рассмотрены ниже). Следует учитывать, что в версиях RDS до 1.0.491 эти поля отсутствовали, поэтому
+попытка обращения к ним из функции модели, подключенной к старой версии RDS, недопустима. Однако,
+попытка подключить новую модель к старой версии RDS, вероятнее всего, будет обнаружена
+при получении доступа к сервисным функциям: в старых версиях RDS не было функций
+<a href="#light_p2">добавления столбцов</a> и
+<a href="#light_p3">обращения к ячейкам</a>, а без них таблицы и так не будут работать. В любом случае,
+при своевременной установке обновлений RDS проблем возникнуть не должно.</p>
+
+<h2 id="light_p17">2.2. Реакция на кнопку добавления строки</h2>
+
+<p>При нажатии кнопки добавления строки в таблицу вызывается расширенная функция обратного вызова,
+которая и должна добавить в таблицу новую строку. Поля структуры
+<a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a> при этом заполнены
+следующим образом:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Поле</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Event</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVEVENT_TBLBUTTON</span>
+    (нажатие кнопки управления таблицы).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CtrlId</span></td>
+    <td>Целый идентификатор таблицы, присвоенный ей при вызове функции
+    <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableRow</span></td>
+    <td>Номер текущей строки в таблице (начиная с нуля).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Button</span></td>
+    <td>Константа <span class="cpp">RDS_FORMVAL_TBLBTN_ADD</span>
+    (кнопка добавления строки).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;ButtonResult</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVRESULT_OK</span>
+    (нормальное завершение, функция может изменить это поле, если строка не добавлена).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;IndexAfterButton</span></td>
+    <td>&minus;1 (функция может записать в это поле номер строки, которую нужно
+    сделать текущей).</td>
+  </tr>
+</table>
+</div></div>
+
+<p class="noindent">Остальные поля структуры в этой реакции не используются.</p>
+
+<p>Расширенная функция обратного вызова, реагируя на это событие, может добавить строку в таблицу двумя
+способами. Проще всего добавить строку в конец таблицы: для этого следует
+<a href="#light_p4">считать число строк</a> таблицы, а потом начать
+<a href="#light_p3">записывать данные</a> в строку с номером, равным числу строк &ndash;
+это автоматически добавит новую строку в конец таблицы. Если в таблице <i>N</i> строк, то они имеют номера от
+нуля до (<i>N</i>&minus;1), т.е. строка с индексом <i>N</i> находилось бы сразу после последней строки,
+существующей на данный момент в таблице. Запись данных в несуществующую строку автоматически создает
+эту строку, поэтому запись значений в ячейки строки <i>N</i> добавит новую строку в конец таблицы. Такое
+добавление строки используется в примере, рассмотренном в <a href="#light_pex">3</a>.</p>
+
+<p>При желании, можно вставить строку в произвольное место таблицы при помощи
+<a href="#light_p13b">соответствующей функции</a>.</p>
+
+<p>Если функция обратного вызова добавила строку в таблицу, она должна сохранить в поле <span class="cpp">ButtonResult</span>
+уже находящееся там значение <span class="cpp">RDS_FORMSERVRESULT_OK</span>. При этом желательно записать в поле
+<span class="cpp">IndexAfterButton</span> номер добавленной строки: если в этом поле после завершения функции
+окажется неотрицательное число, текущей строкой таблицы станет строка с этим номером. Таким образом,
+текущей станет добавленная строка.</p>
+
+<p>Если функция не добавила строку в таблицу, она должна записать в поле <span class="cpp">ButtonResult</span>
+значение <span class="cpp">RDS_FORMSERVRESULT_NO</span>. Чаще всего в реакции на кнопку добавления строки
+программно открывается новое окно, в котором пользователь вводит значения ячеек для новой строки
+(см. пример в <a href="#light_pex">3</a>). Если пользователь закрывает это окно кнопкой &laquo;OK&raquo;,
+в таблицу добавляется новая строка и в ее ячейки записываются значения, введенные пользователем. Если же
+окно было закрыто кнопкой &laquo;Отмена&raquo;, новая строка не добавляется, и функция обратного
+вызова записывает в <span class="cpp">ButtonResult</span> значение <span class="cpp">RDS_FORMSERVRESULT_NO</span>.
+Конечно, можно сделать добавление строк и по-другому: при нажатии кнопки добавлять в таблицу
+строку с какими-либо значениями по умолчанию, а пользователь уже сам потом изменит их,
+нажав кнопку редактирования строки.</p>
+
+<h2 id="light_p18">2.3. Реакция на кнопку удаления строки</h2>
+
+<p>При нажатии кнопки удаления строки расширенная функция обратного вызова используется для проверки
+разрешения этого удаления. Если функция не предпримет никаких действий, строка будет удалена, поэтому реакцию
+на это событие следует включать в функцию только в том случае, если при удалении строки нужно предпринять
+какие-то действия &ndash; например, запросить у пользователя подтверждение.</p>
+<p>Поля структуры
+<a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a> при вызове
+функции для реакции на нажатие кнопки удаления строки заполнены
+следующим образом:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Поле</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Event</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVEVENT_TBLBUTTON</span>
+    (нажатие кнопки управления таблицы).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CtrlId</span></td>
+    <td>Целый идентификатор таблицы, присвоенный ей при вызове функции
+    <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableRow</span></td>
+    <td>Номер текущей строки в таблице (начиная с нуля).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Button</span></td>
+    <td>Константа <span class="cpp">RDS_FORMVAL_TBLBTN_DEL</span>
+    (кнопка удаления строки).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;ButtonResult</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVRESULT_OK</span>
+    (удаление разрешено, функция может изменить это поле для запрета удаления строки).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;IndexAfterButton</span></td>
+    <td>&minus;1 (функция может записать в это поле номер строки, которую нужно
+    сделать текущей).</td>
+  </tr>
+</table>
+</div></div>
+
+<p class="noindent">Остальные поля структуры в этой реакции не используются.</p>
+
+<p>Если удаление строки при каких-то условиях запрещено, будет логично запретить в этом случае
+нажатие кнопки удаления в
+<a href="#light_p20">соответствующей реакции</a> (см. пример в <a href="#light_pex">3</a>).</p>
+
+<h2 id="light_p19">2.4. Реакция на кнопку редактирования строки</h2>
+
+<p>При нажатии кнопки редактирования строки вызывается расширенная функция обратного вызова,
+в которой обычно программно открывается дополнительное окно настроек с полями ввода для
+редактирования значения ячеек текущей строки (см. пример в <a href="#light_pex">3</a>).
+Поля структуры <a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a>
+при этом заполнены следующим образом:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Поле</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Event</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVEVENT_TBLBUTTON</span>
+    (нажатие кнопки управления таблицы).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CtrlId</span></td>
+    <td>Целый идентификатор таблицы, присвоенный ей при вызове функции
+    <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableRow</span></td>
+    <td>Номер текущей строки в таблице (начиная с нуля).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Button</span></td>
+    <td>Константа <span class="cpp">RDS_FORMVAL_TBLBTN_PROP</span>
+    (кнопка редактирования строки).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;ButtonResult</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVRESULT_OK</span>
+    (значения в текущей строке отредактированы, функция может изменить это поле,
+    если редактирование отменено).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;IndexAfterButton</span></td>
+    <td>&minus;1 (функция может записать в это поле номер строки, которую нужно
+    сделать текущей).</td>
+  </tr>
+</table>
+</div></div>
+
+<p class="noindent">Остальные поля структуры в этой реакции не используются.</p>
+
+<p>Реагируя на нажатие пользователем кнопки редактирования, функция должна считать значения
+текущей (поле <span class="cpp">TableRow</span>) строки и каким-либо образом предъявить их пользователю
+для редактирования. После редактирования она должна записать их обратно. Если пользователь</p>
+
+<h2 id="light_p20">2.5. Управление разрешенностью кнопок</h2>
+
+<p>При помощи расширенной функции обратного вызова можно управлять разрешенностью кнопок добавления и удаления
+строки (остальные кнопки управляются автоматически). Функция вызывается для обеих кнопок при любой операции
+с таблицей:
+при изменении номера текущей строки, добавлении и удалении строк и т.п. Так можно, например, запретить добавление
+или удаление строк при каких-то условиях. В <a href="#light_pex">примере ниже</a>
+при помощи этой реакции запрещается удаление строки, если в таблице она осталась одна.</p>
+<p> Поля структуры <a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a>
+при вызове этой реакции заполнены следующим образом:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Поле</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Event</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVEVENT_TBLBTNENABLE</span>
+    (управление разрешенностью кнопки).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CtrlId</span></td>
+    <td>Целый идентификатор таблицы, присвоенный ей при вызове функции
+    <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableRow</span></td>
+    <td>Номер текущей строки в таблице (начиная с нуля).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Button</span></td>
+    <td>Константа <span class="cpp">RDS_FORMVAL_TBLBTN_ADD</span>
+    (кнопка добавления) или <span class="cpp">RDS_FORMVAL_TBLBTN_DEL</span> (кнопка удаления),
+    в зависимости от того, разрешенность какой кнопки запрашивается.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;ButtonResult</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVRESULT_OK</span>
+    (кнопка разрешена), функция может записать сюда <span class="cpp">RDS_FORMSERVRESULT_NO</span> для
+    запрещения кнопки.</td>
+  </tr>
+</table>
+</div></div>
+
+<p class="noindent">Остальные поля структуры в этой реакции не используются.</p>
+
+<p>Если функция при ее вызове для этого события не выполнит никаких действий, оставив в поле
+<span class="cpp">ButtonResult</span> значение <span class="cpp">RDS_FORMSERVRESULT_OK</span>,
+то разрешенность кнопки, указанной в поле <span class="cpp">Button</span>, будет определена автоматически.
+Кнопка добавления будет разрешена всегда, а кнопка удаления &ndash; если в таблице еще есть строки.
+Таким образом, функция обратного вызова не может разрешить работу кнопки, запрещенной по логике
+работы таблицы: если, например, в таблице нет строк, функция не сможет разрешить кнопку удаления.</p>
+
+<p>Если функция запишет в поле <span class="cpp">ButtonResult</span> значение
+<span class="cpp">RDS_FORMSERVRESULT_NO</span>, кнопка станет запрещенной, даже если
+по логике таблицы она могла бы сработать.</p>
+
+<h2 id="light_p21">2.6. Реакция на смену текущей строки</h2>
+
+<p>При изменении пользователем текущей (выделенной другим цветом) строки таблицы функция
+обратного вызова вызывается точно так же, как и для изменения значения обычного поля ввода
+окна настроек, т.е. в поле <span class="cpp">Event</span> структуры
+<a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a>
+записывается значение <span class="cpp">RDS_FORMSERVEVENT_CHANGE</span>:
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Поле</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Event</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVEVENT_CHANGE</span>
+    (изменение значения поля).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CtrlId</span></td>
+    <td>Целый идентификатор таблицы, присвоенный ей при вызове функции
+    <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableRow</span></td>
+    <td>Номер текущей строки в таблице (начиная с нуля).</td>
+  </tr>
+</table>
+</div></div>
+
+<p class="noindent">Остальные поля структуры в этой реакции не используются.</p>
+
+<p>Отличие от реакции на изменение любого другого поля заключается только в том, что для таблицы в
+поле <span class="cpp">TableRow</span> структуры дополнительно передается изменившийся номер текущей
+строки, поэтому его не обязательно получать при помощи
+<a href="#light_p13c">стандартной функции</a>.</p>
+
+<h2 id="light_p22">2.7. Программное рисование ячейки или заголовка</h2>
+
+<p>Для ячеек таблицы, находящихся в столбцах, при <a href="#light_p2">создании</a>
+которых был указан флаг <span class="cpp">RDS_FORMTBLF_DRAW</span>, рисование содержимого
+в сетке будет выполняться функцией обратного вызова. При включенной
+<a href="#light_p8">строке заголовка</a> рисование заголовков столбцов, при создании которых
+был указан флаг <span class="cpp">RDS_FORMTBLF_HDRDRAW</span>, тоже будет выполняться функцией
+обратного вызова. Функция может отказаться от рисования, тогда ячейка или заголовок будут
+нарисованы стандартным образом.</p>
+
+<p>Для рисования в функции обратного вызова поля структуры
+<a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a>
+заполняются следующим образом:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+  <tr>
+    <th>Поле</th>
+    <th>Значение</th>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Event</span></td>
+    <td>Константа <span class="cpp">RDS_FORMSERVEVENT_DRAW</span>
+    (рисование).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CtrlId</span></td>
+    <td>Целый идентификатор таблицы, присвоенный ей при вызове функции
+    <span class="cpp"><a class="hidden" href="#light_p1">rdsFORMAddEdit</a></span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp">HDC&nbsp;dc</span></td>
+    <td>Контекст устройства WinAPI. Для рисования вместо стандартных функций Windows API
+    можно использовать графические функции RDS, описанные в приложении А.5.18, тогда это поле
+    использовать не требуется.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Left,Top</span></td>
+    <td>Координаты левого верхнего угла прямоугольника ячейки или заголовка.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;Width,Height</span></td>
+    <td>Ширина и высота прямоугольника ячейки или заголовка.</td>
+  </tr>
+
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableRow</span></td>
+    <td>При рисовании ячейки таблицы: номер строки ячейки (начиная с нуля).<br />
+    При рисовании заголовка таблицы: &minus;1.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;TableCol</span></td>
+    <td>Номер столбца ячейки или заголовка (начиная с нуля). В большинстве случаев вместо номера столбца лучше
+    использовать идентификатор из поля <span class="cpp">ColId</span>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;ColId</span></td>
+    <td>Идентификатор столбца ячейки или заголовка, данный ему при <a class="hidden" href="#light_p2">создании</a>.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp">LPSTR&nbsp;CellValue</span></td>
+    <td>При рисовании ячейки таблицы: текст значения этой ячейки.<br />
+    При рисовании заголовка таблицы: заданный при создании текст заголовка.</td>
+  </tr>
+  <tr>
+    <td><span class="cpp">COLORREF&nbsp;BGColor</span></td>
+    <td>Цвет фона, которым обычно рисуется эта ячейка или заголовок (зависит от настроек Windows
+    и от того, находится ли ячейка в текущей строке, поскольку цвет фона выделенной строки отличается
+    от остальных).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp">COLORREF&nbsp;FGColor</span></td>
+    <td>Цвет текста, которым обычно выводится значение этой ячейки или заголовок (как и цвет фона,
+    зависит от настроек Windows и принадлежности ячейки к текущей строке).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp"><span class="kw">int</span>&nbsp;CellAlignment</span></td>
+    <td>Выравнивание текста в ячейке или заголовке, заданное при создании столбца:
+    &minus;1 (по левому краю), 0 (по центру) или 1 (по правому краю).</td>
+  </tr>
+  <tr>
+    <td><span class="cpp">BOOL&nbsp;DefaultTableDraw</span></td>
+    <td>Исходно содержит <span class="cpp">FALSE</span>. Если функция обратного вызова
+    запишет туда <span class="cpp">TRUE</span>, ячейка или заголовок будут нарисованы
+    стандартным образом.</td>
+  </tr>
+</table>
+</div></div>
+
+<p class="noindent">Остальные поля структуры в этой реакции не используются.</p>
+
+<p>Рисование выполняется либо графическими функциями Windows API, либо графическими функциями RDS. Поскольку
+цвета интерфейса Windows могут настраиваться, а сетка таблицы находится в окне в окружении стандартных полей ввода,
+выпадающих списков и т.п., для рисования следует использовать цвет фона из поля <span class="cpp">BGColor</span>
+и цвет текста и линий из поля <span class="cpp">FGColor</span>. Шрифт устанавливать не следует &ndash;
+он уже установлен так, чтобы соответствовать внешнему виду всех остальных элементов окна.</p>
+
+<p>Если необходимо программно рисовать только некоторые ячейки в столбце, то для тех ячеек, которые должны
+быть отображены стандартным образом, функция должна записать <span class="cpp">TRUE</span> в поле
+<span class="cpp">DefaultTableDraw</span>.</p>
+
+<p>Пример программного рисования ячеек приведен в <a href="#light_pex">3</a>.</p>
+
+<h1 id="light_pex">3. Пример модели блока с таблицей в настройках</h1>
+
+<div class="picright"><div class="container">
+<img src="img/FormTable_Scheme.png" width="239" height="85" alt="Цветной переключатель" />
+</div></div>
+
+<p>Рассмотрим простую модель блока, весь прямоугольник которого будет разделен по вертикали на цветные полосы
+одинаковой высоты. С каждой полосой будет связано целое число, которое будет подаваться на выход блока при
+щелчке мышью на этой полосе. Внутри выбранной пользователем полосы, целое число которой на данный момент находится на выходе, будет
+рисоваться рамка с небольшим отступом. Настройки блока должны будут позволять пользователю задать
+произвольное число полос, причем для каждой он сможет указать цвет и число для выдачи на выход. Кроме того,
+настройки будут позволять задать цвет рамки и начальное
+значение, которое блок устанавливает на выходе при сбросе расчета.</p>
+
+<p>Поскольку число полос задается пользователем в настройках, сделаем в личной области данных блока
+(см. &sect;2.4 руководства программиста) массив произвольного размера, который будет хранить для каждой
+полосы цвет и число для выхода. Для того, чтобы этот массив можно было задавать в настройках, добавляя
+и удаляя полосы, будем использовать поле-таблицу, где каждая строка будет соответствовать одной полосе
+и отображать выбранный для нее цвет (программным рисованием) и число. Кроме того, поскольку в блоке
+должна быть хотя бы одна полоса (должен же он хоть что-то выдавать на выход), будем запрещать удаление
+из таблицы всех строк: хотя бы одна строка-полоса должна всегда оставаться.</p>
+
+<p>Сначала рассмотрим стандартные части модели блока: реакции на инициализацию, загрузку и сохранение параметров,
+рисование блока (полосы нужно рисовать программно) и т.п. Эти реакции много раз подробно разбирались в
+руководстве программиста, поэтому не будем на них останавливаться. А вот создание окна настроей блока
+с таблицей внутри будет подробно рассмотрена <a href="#light_ex_setup">ниже</a>.</p>
+
+<p>Описание личной области данных блока, функция его модели и большинство функций-членов класса,
+объектом которого мы сделаем личную область данных, будут выглядеть так:</p>
+
+<pre class="cpp">  <span class="rem">//========= Цветной переключатель =========</span>
+
+  <span class="rem">// Один элемент (полоса) переключателя</span>
+  <span class="kw">class</span> TColorSwitchElement
+  { <span class="kw">public</span>:
+      COLORREF Color;     <span class="rem">// Цвет</span>
+      <span class="kw">int</span> Output;         <span class="rem">// Выходная константа</span>
+
+      TColorSwitchElement(<span class="kw">void</span>)
+        { Color=<span class="const">0xffffff</span>; <span class="rem">// Белый</span>
+          Output=<span class="const">0</span>;
+        };
+  };
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Класс личной области данных блока</span>
+  <span class="kw">class</span> TColorSwitch
+  { <span class="kw">public</span>:
+      COLORREF Border;    <span class="rem">// Цвет рамки</span>
+      <span class="kw">int</span> Initial;        <span class="rem">// Начальное значение</span>
+      TColorSwitchElement **Options; <span class="rem">// Элементы (полосы)</span>
+      <span class="kw">int</span> OptionsCount;   <span class="rem">// Число элементов</span>
+
+      <span class="rem">// Установить число элементов</span>
+      <span class="kw">void</span> SetCount(<span class="kw">int</span> n);
+      <span class="rem">// Реакция на кнопку мыши</span>
+      <span class="kw">int</span> MouseDown(RDS_PMOUSEDATA md);
+      <span class="rem">// Рисование</span>
+      <span class="kw">void</span> Draw(RDS_PDRAWDATA dd,<span class="kw">int</span> cur);
+      <span class="rem">// Настройка</span>
+      BOOL Setup(<span class="kw">void</span>);
+      <span class="rem">// Загрузка в текстовом формате</span>
+      <span class="kw">void</span> LoadText(<span class="kw">char</span> *text);
+      <span class="rem">// Запись в текстовом формате</span>
+      <span class="kw">void</span> SaveText(<span class="kw">void</span>);
+
+      <span class="rem">// Конструктор</span>
+      TColorSwitch(<span class="kw">void</span>)
+        { Border=<span class="const">0</span>;
+          Initial=<span class="const">0</span>;
+          <span class="rem">// Создаем одну полосу</span>
+          OptionsCount=<span class="const">1</span>;
+          Options=<span class="kw">new</span> TColorSwitchElement*[<span class="const">1</span>];
+          Options[<span class="const">0</span>]=<span class="kw">new</span> TColorSwitchElement();
+        };
+      <span class="rem">// Деструктор</span>
+      ~TColorSwitch()
+        { SetCount(<span class="const">0</span>); };
+  };
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Установить число элементов</span>
+  <span class="kw">void</span> TColorSwitch::SetCount(<span class="kw">int</span> n)
+  { TColorSwitchElement **arr;
+    <span class="kw">if</span>(n==OptionsCount) <span class="rem">// Число не изменилось</span>
+      <span class="kw">return</span>;
+    <span class="kw">if</span>(n&lt;OptionsCount) <span class="rem">// Элементов стало меньше</span>
+      { <span class="rem">// Уничтожаем лишние</span>
+        <span class="kw">for</span>(<span class="kw">int</span> i=n;i&lt;OptionsCount;i++)
+          <span class="kw">delete</span> Options[i];
+        <span class="kw">if</span>(n&lt;=<span class="const">0</span>) <span class="rem">// Нужно стереть все</span>
+          { OptionsCount=<span class="const">0</span>;
+            <span class="kw">delete</span>[] Options;
+            Options=NULL;
+            <span class="kw">return</span>;
+          }
+        OptionsCount=n;
+        <span class="kw">return</span>;
+      }
+    <span class="rem">// n&gt;OptionsCount - добавляем новые</span>
+    arr=<span class="kw">new</span> TColorSwitchElement*[n];
+    <span class="kw">if</span>(Options)
+      memcpy(arr,Options,OptionsCount*<span class="kw">sizeof</span>(TColorSwitchElement*));
+    <span class="kw">delete</span>[] Options;
+    Options=arr;
+    <span class="kw">for</span>(<span class="kw">int</span> i=OptionsCount;i&lt;n;i++)
+      Options[i]=<span class="kw">new</span> TColorSwitchElement();
+    OptionsCount=n;
+  }
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Реакция на кнопку мыши</span>
+  <span class="kw">int</span> TColorSwitch::MouseDown(RDS_PMOUSEDATA md)
+  { <span class="kw">int</span> n;
+
+    <span class="rem">// Определяем номер полосы, в которую попал курсор</span>
+    <span class="kw">if</span>(md-&gt;Height==<span class="const">0</span>)
+      n=<span class="const">0</span>;
+    <span class="kw">else</span>
+      n=((md-&gt;y-md-&gt;Top)*OptionsCount)/md-&gt;Height;
+    <span class="kw">if</span>(n&gt;=OptionsCount)
+      n=OptionsCount-<span class="const">1</span>;
+    <span class="kw">return</span> Options[n]-&gt;Output;
+  }
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Рисование</span>
+  <span class="kw">void</span> TColorSwitch::Draw(RDS_PDRAWDATA dd,<span class="kw">int</span> cur)
+  { <span class="kw">double</span> delta=((<span class="kw">double</span>)dd-&gt;Height)/((<span class="kw">double</span>)OptionsCount);
+    <span class="kw">int</span> y=dd-&gt;Top,ynext;
+    <span class="kw">int</span> linewidth=dd-&gt;DoubleZoom;
+
+    <span class="rem">// Элементы</span>
+    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="const">0</span>;i&lt;OptionsCount;i++,y=ynext)
+      { ynext=dd-&gt;Top+delta*(i+<span class="const">1</span>);
+        <span class="rem">// Цветной прямоугольник</span>
+        rdsXGSetPenStyle(RDS_GFSTYLE,PS_NULL,<span class="const">0</span>,<span class="const">0</span>,<span class="const">0</span>);
+        rdsXGSetBrushStyle(<span class="const">0</span>,RDS_GFS_SOLID,Options[i]-&gt;Color);
+        rdsXGRectangle(dd-&gt;Left,y,dd-&gt;Left+dd-&gt;Width,ynext+<span class="const">1</span>);
+        <span class="rem">// Линия над элементом</span>
+        <span class="kw">if</span>(i)
+          { rdsXGSetPenStyle(<span class="const">0</span>,PS_SOLID,linewidth,Border,R2_COPYPEN);
+            rdsXGMoveTo(dd-&gt;Left,y);
+            rdsXGLineTo(dd-&gt;Left+dd-&gt;Width-<span class="const">1</span>,y);
+          }
+        <span class="rem">// Выделение текущего рамкой с отступом</span>
+        <span class="kw">if</span>(Options[i]-&gt;Output==cur)
+          { <span class="kw">int</span> shift=<span class="const">3</span>*dd-&gt;DoubleZoom; <span class="rem">// Величина отступа</span>
+            rdsXGSetPenStyle(<span class="const">0</span>,PS_SOLID,linewidth,Border,R2_COPYPEN);
+            rdsXGSetBrushStyle(RDS_GFSTYLE,RDS_GFS_EMPTY,<span class="const">0</span>);
+            rdsXGRectangle(dd-&gt;Left+shift,y+shift,
+                           dd-&gt;Left+dd-&gt;Width-shift,
+                           ynext-shift+<span class="const">1</span>);
+          }
+
+      }
+    <span class="rem">// Рамка вокруг</span>
+    rdsXGSetPenStyle(<span class="const">0</span>,PS_SOLID,linewidth,Border,R2_COPYPEN);
+    rdsXGSetBrushStyle(RDS_GFSTYLE,RDS_GFS_EMPTY,<span class="const">0</span>);
+    rdsXGRectangle(dd-&gt;Left,dd-&gt;Top,dd-&gt;Left+dd-&gt;Width,
+                   dd-&gt;Top+dd-&gt;Height);
+  }
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Запись в текстовом формате</span>
+  <span class="kw">void</span> TColorSwitch::SaveText(<span class="kw">void</span>)
+  {
+    rdsWriteWordValueText(<span class="str">"border"</span>,Border);
+    rdsWriteWordValueText(<span class="str">"initial"</span>,Initial);
+    rdsWriteWordValueText(<span class="str">"count"</span>,OptionsCount);
+    <span class="kw">for</span>(<span class="kw">int</span> i=<span class="const">0</span>;i&lt;OptionsCount;i++)
+      { rdsWriteBlockDataText(<span class="str">"item"</span>,TRUE);
+        rdsWriteWordValueText(<span class="str">"color"</span>,Options[i]-&gt;Color);
+        rdsWriteWordValueText(<span class="str">"value"</span>,Options[i]-&gt;Output);
+      }
+  }
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Загрузка в текстовом формате</span>
+  <span class="kw">void</span> TColorSwitch::LoadText(<span class="kw">char</span> *text)
+  { <span class="kw">char</span> *word,*ptr=text,c;
+    <span class="kw">int</span> currentcount=<span class="const">0</span>;
+
+    <span class="kw">for</span>(;;)
+      { <span class="rem">// Чтение слова</span>
+        <span class="kw">do</span> word=rdsGetTextWord(ptr, <span class="rem">// Адрес начала</span>
+                       &amp;ptr,   <span class="rem">// Сюда записать адрес начала следующего слова</span>
+                       &amp;c,     <span class="rem">// Первый символ слова</span>
+                       TRUE);  <span class="rem">// Перевести слово в нижний регистр</span>
+        <span class="kw">while</span>(c==<span class="str">'\n'</span>); <span class="rem">// Игнорируем концы строк</span>
+        <span class="kw">if</span>(c==<span class="const">0</span>) <span class="kw">break</span>; <span class="rem">// Конец текста</span>
+        <span class="kw">if</span>(strcmp(word,<span class="str">"border"</span>)==<span class="const">0</span>)
+          { word=rdsGetTextWord(ptr,&amp;ptr,NULL,FALSE);
+            Border=(COLORREF)atoi(word);
+          }
+        <span class="kw">else</span> <span class="kw">if</span>(strcmp(word,<span class="str">"initial"</span>)==<span class="const">0</span>)
+          { word=rdsGetTextWord(ptr,&amp;ptr,NULL,FALSE);
+            Initial=atoi(word);
+          }
+        <span class="kw">else</span> <span class="kw">if</span>(strcmp(word,<span class="str">"count"</span>)==<span class="const">0</span>)
+          { <span class="kw">int</span> count;
+            word=rdsGetTextWord(ptr,&amp;ptr,NULL,FALSE);
+            count=atoi(word);
+            <span class="kw">if</span>(count&lt;=<span class="const">0</span>) count=<span class="const">1</span>;
+            SetCount(count);
+          }
+        <span class="kw">else</span> <span class="kw">if</span>(strcmp(word,<span class="str">"item"</span>)==<span class="const">0</span>)
+          { currentcount++;
+            <span class="kw">if</span>(currentcount&gt;OptionsCount)
+              SetCount(currentcount);
+          }
+        <span class="kw">else</span> <span class="kw">if</span>(strcmp(word,<span class="str">"color"</span>)==<span class="const">0</span>)
+          { word=rdsGetTextWord(ptr,&amp;ptr,NULL,FALSE);
+            <span class="kw">if</span>(currentcount&gt;=<span class="const">0</span>)
+              Options[currentcount-<span class="const">1</span>]-&gt;Color=(COLORREF)atoi(word);
+          }
+        <span class="kw">else</span> <span class="kw">if</span>(strcmp(word,<span class="str">"value"</span>)==<span class="const">0</span>)
+          { word=rdsGetTextWord(ptr,&amp;ptr,NULL,FALSE);
+            <span class="kw">if</span>(currentcount&gt;=<span class="const">0</span>)
+              Options[currentcount-<span class="const">1</span>]-&gt;Output=atoi(word);
+          }
+      }
+    SetCount(currentcount);
+  }
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Макроопределения для переменных</span>
+  <span class="preproc">#define pStart ((char *)(BlockData-&gt;VarData))</span>
+  <span class="preproc">#define Start (*((char *)(pStart)))                         </span><span class="rem">// 0</span>
+  <span class="preproc">#define Ready (*((char *)(pStart+1)))                       </span><span class="rem">// 1</span>
+  <span class="preproc">#define Out (*((int *)(pStart+2)))                          </span><span class="rem">// 2</span>
+  <span class="rem">// Функция модели блока</span>
+  <span class="kw">extern</span> <span class="str">"C"</span> <span class="kw">__declspec</span>(<span class="kw">dllexport</span>) <span class="kw">int</span> RDSCALL ColorSwitch(
+      <span class="kw">int</span> CallMode,             <span class="rem">// Сообщение (режим вызова)</span>
+      RDS_PBLOCKDATA BlockData, <span class="rem">// Данные блока</span>
+      LPVOID ExtParam)          <span class="rem">// Дополнительные данные вызова</span>
+  { <span class="rem">// Личная область данных, приведенная к типу TColorSwitch*</span>
+    TColorSwitch *data=(TColorSwitch*)(BlockData-&gt;BlockData);
+
+    <span class="kw">switch</span>(CallMode)
+      { <span class="rem">// Инициализация</span>
+        <span class="kw">case</span> RDS_BFM_INIT:
+          BlockData-&gt;BlockData=<span class="kw">new</span> TColorSwitch();
+          <span class="kw">break</span>;
+
+        <span class="rem">// Очистка</span>
+        <span class="kw">case</span> RDS_BFM_CLEANUP:
+          <span class="kw">delete</span> data;
+          <span class="kw">break</span>;
+
+        <span class="rem">// Проверка допустимости структуры переменных блока</span>
+        <span class="kw">case</span> RDS_BFM_VARCHECK:
+          <span class="kw">if</span>(strcmp((<span class="kw">char</span>*)ExtParam,<span class="str">"{SSI}"</span>)==<span class="const">0</span>)
+            <span class="kw">return</span> RDS_BFR_DONE;
+          <span class="kw">return</span> RDS_BFR_BADVARSMSG;
+
+        <span class="rem">// Сохранение параметров</span>
+        <span class="kw">case</span> RDS_BFM_SAVETXT:
+          data-&gt;SaveText();
+          <span class="kw">break</span>;
+
+        <span class="rem">// Загрузка параметров</span>
+        <span class="kw">case</span> RDS_BFM_LOADTXT:
+          data-&gt;LoadText((<span class="kw">char</span>*)ExtParam);
+          <span class="rem">// break отсутствует намеренно</span>
+        <span class="kw">case</span> RDS_BFM_RESETCALC: <span class="rem">// Сброс расчета</span>
+          Out=data-&gt;Initial;
+          Ready=<span class="const">1</span>;
+          <span class="kw">break</span>;
+
+        <span class="rem">// Реакция на нажатие кнопки мыши</span>
+        <span class="kw">case</span> RDS_BFM_MOUSEDOWN:
+          Out=data-&gt;MouseDown((RDS_PMOUSEDATA)ExtParam);
+          Ready=<span class="const">1</span>;
+          <span class="kw">break</span>;
+
+        <span class="rem">// Программное рисование блока</span>
+        <span class="kw">case</span> RDS_BFM_DRAW:
+          data-&gt;Draw((RDS_PDRAWDATA)ExtParam,Out);
+          <span class="kw">break</span>;
+
+        <span class="rem">// Настройка блока пользователем</span>
+        <span class="kw">case</span> RDS_BFM_SETUP:
+          <span class="kw">if</span>(data-&gt;Setup())
+            { <span class="kw">if</span>(rdsCalcProcessNeverStarted())
+                { Out=data-&gt;Initial;
+                  Ready=<span class="const">1</span>;
+                }
+              <span class="kw">return</span> RDS_BFR_MODIFIED;
+            }
+          <span class="kw">break</span>;
+      }
+    <span class="kw">return</span> RDS_BFR_DONE;
+  }
+  <span class="rem">// Отмена макроопределений</span>
+  <span class="preproc">#undef Out</span>
+  <span class="preproc">#undef Ready</span>
+  <span class="preproc">#undef Start</span>
+  <span class="preproc">#undef pStart</span>
+  <span class="rem">//=========================================</span></pre>
+
+<p>В личной области данных блока (класс <span class="cpp">TColorSwitch</span>) постоянно
+поддерживается динамический массив указателей <span class="cpp">Options</span> размером в
+<span class="cpp">OptionsCount</span> элементов. Каждый элемент этого массива указывает на
+динамически создаваемый объект класса <span class="cpp">TColorSwitchElement</span>. Последний
+описывает одну полосу на блоке с ее цветом и числом. Таким образом, <span class="cpp">Options</span>
+&ndash; это массив полос блока сверху вниз. Кроме того, в личной области данных хранится
+цвет рамки и разделителей <span class="cpp">Border</span> и начальное значение выхода
+<span class="cpp">Initial</span> &ndash; они относятся ко всему блоку, а не к какой-либо полосе.</p>
+
+<p>Все действия по созданию массива полос, их рисованию, загрузке и сохранению параметров блока
+уже есть в приведенном выше тексте. Осталось рассмотреть настройку блока пользователем.</p>
+
+<p><span id="light_ex_setup">Функция настройки блока</span> выглядит следующим образом:</p>
+
+<pre class="cpp">  <span class="rem">// Прототип функции обратного вызова окна настройки</span>
+  <span class="kw">void</span> RDSCALL TColorSwitch_Setup_CB(RDS_HOBJECT win,RDS_PFORMSERVFUNCDATA data);
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Настройка</span>
+  BOOL TColorSwitch::Setup(<span class="kw">void</span>)
+  { BOOL res;
+    RDS_HOBJECT window;
+
+    <span class="rem">// Создание окна</span>
+    window=rdsFORMCreate(FALSE,<span class="const">300</span>,<span class="const">350</span>,<span class="str">"Цветной переключатель"</span>);
+
+    <span class="rem">// Поле ввода начального значения</span>
+    rdsFORMAddEdit(window,<span class="const">0</span>,<span class="const">1</span>,RDS_FORMCTRL_EDIT,<span class="str">"Начальное значение: "</span>,<span class="const">80</span>);
+    rdsSetObjectInt(window,<span class="const">1</span>,RDS_FORMVAL_VALUE,Initial);
+    <span class="rem">// Кнопка задания цвета рамки и разделителей</span>
+    rdsFORMAddEdit(window,<span class="const">0</span>,<span class="const">2</span>,RDS_FORMCTRL_COLOR|RDS_FORMFLAG_LINE,<span class="str">"Цвет рамки: "</span>,<span class="const">80</span>);
+    rdsSetObjectInt(window,<span class="const">2</span>,RDS_FORMVAL_VALUE,Border);
+
+    <span class="rem">// Таблица полос</span>
+    rdsFORMAddEdit(window,<span class="const">0</span>,<span class="const">3</span>,RDS_FORMCTRL_TABLE,<span class="str">"Варианты:"</span>,<span class="const">0</span>);
+    <span class="rem">// Столбец цвета</span>
+    rdsFORMTBLSetHeader(window,<span class="const">3</span>,<span class="const">0</span>,<span class="str">"Цвет"</span>,RDS_FORMTBLF_HDRCENTER|RDS_FORMTBLF_DRAW,<span class="const">60</span>);
+    <span class="rem">// Столбец значения, подаваемого на выход</span>
+    rdsFORMTBLSetHeader(window,<span class="const">3</span>,<span class="const">1</span>,<span class="str">"Значение"</span>,RDS_FORMTBLF_HDRCENTER|RDS_FORMTBLF_RIGHT,-<span class="const">1</span>);
+    <span class="kw">for</span>(<span class="kw">int</span> r=<span class="const">0</span>;r&lt;OptionsCount;r++)
+      { <span class="rem">// Цвет</span>
+        rdsFORMTBLSetInt(window,<span class="const">3</span>,r,<span class="const">0</span>,Options[r]-&gt;Color);
+        <span class="rem">// Значение</span>
+        rdsFORMTBLSetInt(window,<span class="const">3</span>,r,<span class="const">1</span>,Options[r]-&gt;Output);
+      }
+    <span class="rem">// Открытие окна с расширенной функцией обратного вызова</span>
+    res=rdsFORMShowModalServ(window,TColorSwitch_Setup_CB);
+    <span class="kw">if</span>(res) <span class="rem">// Пользователь нажал "OK"</span>
+      { <span class="kw">int</span> count;
+        <span class="rem">// Чтение начального значения и цвета разделителей</span>
+        Initial=rdsGetObjectInt(window,<span class="const">1</span>,RDS_FORMVAL_VALUE);
+        Border=(COLORREF)rdsGetObjectInt(window,<span class="const">2</span>,RDS_FORMVAL_VALUE);
+        <span class="rem">// Чтение числа строк в таблице</span>
+        count=rdsGetObjectInt(window,<span class="const">3</span>,RDS_FORMVAL_TBLCOUNT);
+        <span class="rem">// Создание массива полос такого же размера</span>
+        SetCount(count);
+        <span class="rem">// Запись в элементы массива данных из таблицы</span>
+        <span class="kw">for</span>(<span class="kw">int</span> r=<span class="const">0</span>;r&lt;count;r++)
+          { Options[r]-&gt;Color=(COLORREF)rdsFORMTBLGetInt(window,<span class="const">3</span>,r,<span class="const">0</span>,NULL);
+            Options[r]-&gt;Output=rdsFORMTBLGetInt(window,<span class="const">3</span>,r,<span class="const">1</span>,NULL);
+          }
+      }
+    <span class="rem">// Уничтожение окна</span>
+    rdsDeleteObject(window);
+    <span class="kw">return</span> res;
+  }
+  <span class="rem">//=========================================</span></pre>
+
+<p>Сначала описывается прототип функции обратного вызова <span class="cpp">TColorSwitch_Setup_CB</span>,
+которая будет реагировать на нажатия кнопок добавления и удаления строк в таблицу и рисовать
+ячейки в столбце цвета полосы. Она будет рассмотрена <a href="#light_ex_callback">ниже</a>.</p>
+
+<p>Далее следует собственно функция настройки блока, в которой нас будет интересовать таблица полос,
+создаваемая в окне функцией</p>
+<pre class="cpp">  rdsFORMAddEdit(window,<span class="const">0</span>,<span class="const">3</span>,RDS_FORMCTRL_TABLE,<span class="str">"Варианты:"</span>,<span class="const">0</span>);</pre>
+
+<p>Таблица получает идентификатор &laquo;3&raquo;, по нему к ней будет идти обращение
+и здесь, для добавления столбцов и обращения к ячейкам, и в функции обратного вызова
+<span class="cpp">TColorSwitch_Setup_CB</span>.</p>
+
+<p>Далее вызовами <a href="#light_p2"><span class="cpp">rdsFORMTBLSetHeader</span></a>
+в таблицу добавляется два столбца:</p>
+<pre class="cpp">  rdsFORMTBLSetHeader(window,<span class="const">3</span>,<span class="const">0</span>,<span class="str">"Цвет"</span>,RDS_FORMTBLF_HDRCENTER|RDS_FORMTBLF_DRAW,<span class="const">60</span>);
+  rdsFORMTBLSetHeader(window,<span class="const">3</span>,<span class="const">1</span>,<span class="str">"Значение"</span>,RDS_FORMTBLF_HDRCENTER|RDS_FORMTBLF_RIGHT,-<span class="const">1</span>);</pre>
+
+<ul>
+  <li>столбец цвета идентификатором 0, заголовком &laquo;Цвет&raquo; и шириной 60 точек, текст заголовка которого выровнен
+  по центру (флаг <span class="cpp">RDS_FORMTBLF_HDRCENTER</span>), а ячейки рисуются
+  программно (флаг <span class="cpp">RDS_FORMTBLF_DRAW</span>);</li>
+  <li>столбец выходных значений с идентификатором 1, заголовком &laquo;Значение&raquo; и автоматически
+  подбираемой шириной (значение &minus;1), текст заголовка
+  которого тоже выровнен по центру, а текст ячейки выровнен по правому краю
+  (флаг <span class="cpp">RDS_FORMTBLF_RIGHT</span>).</li>
+</ul>
+
+<p class="noindent">Далее значения из массива <span class="cpp">Options</span> в цикле
+переписываются в таблицу вызовами
+<a href="#light_p3"><span class="cpp"><span class="cpp">rdsFORMTBLSetInt</span></a>:
+цвета записываются в столбец с идентификатором 0, значения &ndash; в столбец с идентификатором 1.</p>
+
+<pre class="cpp">  <span class="kw">for</span>(<span class="kw">int</span> r=<span class="const">0</span>;r&lt;OptionsCount;r++)
+    { rdsFORMTBLSetInt(window,<span class="const">3</span>,r,<span class="const">0</span>,Options[r]-&gt;Color);
+      rdsFORMTBLSetInt(window,<span class="const">3</span>,r,<span class="const">1</span>,Options[r]-&gt;Output);
+    }</pre>
+
+<p>Строки в таблицу при этом добавляются автоматически: запись в ячейку несуществующей строки приводит
+к созданию этой строки.</p>
+
+<p>Затем окно настроек открывается функцией <span class="cpp">rdsFORMShowModalServ</span>
+(приложение А.5.28.7) с функцией обратного вызова
+<a class="hidden" href="#light_ex_callback"><span class="cpp">TColorSwitch_Setup_CB</span></a>. Если
+пользователь закроет окно кнопкой &laquo;OK&raquo; (функция вернет <span class="cpp">TRUE</span>),
+значения из таблицы будут переписаны обратно в массив <span class="cpp">Options</span>. Для этого сначала
+<a href="#light_p4">число строк таблицы</a> будет считано в локальную переменную
+<span class="cpp">count</span>:</p>
+<pre class="cpp"> count=rdsGetObjectInt(window,<span class="const">3</span>,RDS_FORMVAL_TBLCOUNT);</pre>
+
+<p>После этого вызовом функции-члена класса личной области данных блока
+<span class="cpp">SetCount</span> будет создан новый массив <span class="cpp">Options</span>
+размером <span class="cpp">count</span> элементов, и в цикле, аналогичном предыдущему,
+значения из таблицы будут переписаны в этот массив:</p>
+
+<pre class="cpp">  <span class="kw">for</span>(<span class="kw">int</span> r=<span class="const">0</span>;r&lt;count;r++)
+    { Options[r]-&gt;Color=(COLORREF)rdsFORMTBLGetInt(window,<span class="const">3</span>,r,<span class="const">0</span>,NULL);
+      Options[r]-&gt;Output=rdsFORMTBLGetInt(window,<span class="const">3</span>,r,<span class="const">1</span>,NULL);
+    }</pre>
+
+<p>Теперь рассмотрим <span id="light_ex_callback">функцию обратного вызова</span>
+<span class="cpp">TColorSwitch_Setup_CB</span>:</p>
+
+<pre class="cpp">  <span class="rem">// Прототип функции ввода цвета и значения</span>
+  BOOL TColorSwitch_EditWin(<span class="kw">char</span> *Caption,COLORREF *pColor,<span class="kw">int</span> *pValue);
+  <span class="rem">//=========================================</span>
+
+  <span class="rem">// Функция обратного вызова окна настройки</span>
+  <span class="kw">void</span> RDSCALL TColorSwitch_Setup_CB(RDS_HOBJECT win,RDS_PFORMSERVFUNCDATA data)
+  { <span class="kw">int</span> count,value;
+    COLORREF color;
+    <span class="kw">switch</span>(data-&gt;Event)
+      { <span class="rem">// Программное рисование ячейки цвета</span>
+        <span class="kw">case</span> RDS_FORMSERVEVENT_DRAW:
+          <span class="kw">if</span>(data-&gt;CtrlId==<span class="const">3</span> &amp;&amp; data-&gt;ColId==<span class="const">0</span>) <span class="rem">// Таблица, цвет</span>
+            { <span class="kw">int</span> w=<span class="const">30</span>,h=<span class="const">12</span>; <span class="rem">// Размеры цветного прямоугольника</span>
+              <span class="kw">int</span> x=data-&gt;Left+(data-&gt;Width-w)/<span class="const">2</span>,
+                  y=data-&gt;Top+(data-&gt;Height-h)/<span class="const">2</span>;
+              <span class="rem">// Рисование прямоугольника</span>
+              color=(COLORREF)atoi(data-&gt;CellValue);
+              rdsXGSetPenStyle(<span class="const">0</span>,PS_SOLID,<span class="const">1</span>,data-&gt;FGColor,R2_COPYPEN);
+              rdsXGSetBrushStyle(<span class="const">0</span>,RDS_GFS_SOLID,color);
+              rdsXGRectangle(x,y,x+w,y+h);
+            }
+          <span class="kw">break</span>;
+
+        <span class="rem">// Нажатие одной из кнопок управления таблицы</span>
+        <span class="kw">case</span> RDS_FORMSERVEVENT_TBLBUTTON:
+          <span class="kw">if</span>(data-&gt;CtrlId==<span class="const">3</span>)
+            <span class="kw">switch</span>(data-&gt;Button)
+              { <span class="rem">// Кнопка добавления строки</span>
+                <span class="kw">case</span> RDS_FORMVAL_TBLBTN_ADD:
+                  <span class="rem">// Начальные значения для добавляемой строки</span>
+                  color=<span class="const">0xffffff</span>; <span class="rem">// Белый цвет</span>
+                  value=<span class="const">0</span>;        <span class="rem">// Выходное значение 0</span>
+                  <span class="rem">// Число строк в таблице</span>
+                  count=rdsGetObjectInt(win,data-&gt;CtrlId,RDS_FORMVAL_TBLCOUNT);
+                  <span class="rem">// Открываем окно для ввода цвета и значения</span>
+                  <span class="kw">if</span>(TColorSwitch_EditWin(<span class="str">"Добавление"</span>,&amp;color,&amp;value))
+                    { <span class="rem">// Добавление - это установка строки count</span>
+                      rdsFORMTBLSetInt(win,data-&gt;CtrlId,count,<span class="const">0</span>,color);
+                      rdsFORMTBLSetInt(win,data-&gt;CtrlId,count,<span class="const">1</span>,value);
+                      data-&gt;IndexAfterButton=count;
+                    }
+                  <span class="kw">break</span>;
+                <span class="rem">// Кнопка редактирования строки</span>
+                <span class="kw">case</span> RDS_FORMVAL_TBLBTN_PROP:
+                  <span class="rem">// Считываем данные текущей строки</span>
+                  color=(COLORREF)rdsFORMTBLGetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">0</span>,NULL);
+                  value=rdsFORMTBLGetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">1</span>,NULL);
+                  <span class="rem">// Открываем окно для ввода цвета и значения</span>
+                  <span class="kw">if</span>(TColorSwitch_EditWin(<span class="str">"Редактирование"</span>,&amp;color,&amp;value))
+                    { <span class="rem">// Нажата OK - записываем новые значения в таблицу</span>
+                      rdsFORMTBLSetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">0</span>,color);
+                      rdsFORMTBLSetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">1</span>,value);
+                    }
+                  <span class="kw">break</span>;
+              }
+          <span class="kw">break</span>;
+
+        <span class="rem">// Управление разрешенностью кнопок</span>
+        <span class="kw">case</span> RDS_FORMSERVEVENT_TBLBTNENABLE:
+          <span class="kw">if</span>(data-&gt;CtrlId==<span class="const">3</span>)
+            <span class="kw">switch</span>(data-&gt;Button)
+              { <span class="rem">// Кнопка удаления</span>
+                <span class="kw">case</span> RDS_FORMVAL_TBLBTN_DEL:
+                  <span class="rem">// Если в таблице осталась только одна строка, запрещаем удаление</span>
+                  <span class="kw">if</span>(rdsGetObjectInt(win,data-&gt;CtrlId,RDS_FORMVAL_TBLCOUNT)&lt;<span class="const">2</span>)
+                    data-&gt;ButtonResult=RDS_FORMSERVRESULT_NO;
+                  <span class="kw">break</span>;
+              }
+          <span class="kw">break</span>;
+      }
+  }
+  <span class="rem">//=========================================</span></pre>
+
+<p>Сначала описывается прототип функции, которая будет открывать окно для ввода цвета и значения для
+полосы. Эта функция будет использоваться в реакциях на нажатие кнопок добавления и редактирования строки,
+она рассматривается <a href="#light_ex_subwin">ниже</a>. Далее записана сама функция
+<span class="cpp">TColorSwitch_Setup_CB</span>, которая реагирует на три события:
+<span class="cpp">RDS_FORMSERVEVENT_DRAW</span> (программное рисование),
+<span class="cpp">RDS_FORMSERVEVENT_TBLBUTTON</span> (нажатие кнопки управления таблицей)
+и <span class="cpp">RDS_FORMSERVEVENT_TBLBTNENABLE</span> (управление разрешенностью кнопок).</p>
+
+<p>В реакции на событие программного рисования <span class="cpp">RDS_FORMSERVEVENT_DRAW</span>
+проверяется, нужная ли это таблица (идентификатор в поле <span class="cpp">CtrlId</span>
+структуры <a class="hidden" href="#light_p16"><span class="cpp">RDS_FORMSERVFUNCDATA</span></a>,
+указатель на которую передан в функцию в параметре <span class="cpp">data</span>, должен быть равен трем)
+и нужный ли это столбец (идентификатор
+столбца цвета в поле <span class="cpp">ColId</span> &ndash; ноль). Конечно, поскольку в этом окне
+всего один объект, поддерживающий программное рисование, и в таблице всего один столбец с программно рисуемыми
+ячейками, эту проверку можно было бы и не делать, но она приведена здесь для полноты примера.
+Если это нужная таблица и нужный столбец, по центру ячейки таблицы функциями RDS рисуется прямоугольник
+размером 30 на 12 точек. Цвет фона прямоугольника берется из значения рисуемой ячейки таблицы (текстовое поле
+<span class="cpp">CellValue</span>, преобразованное в целое число), в качестве цвета рамки
+используется переданное в функцию значение цвета шрифта ячейки из поля <span class="cpp">FGColor</span> &ndash;
+так прямоугольник никогда не сольется с автоматически нарисованным фоном ячейки, цвет которого
+зависит от настроек Windows и принадлежности ячейки к текущей строке.</p>
+
+<pre class="cpp">  <span class="rem">// Рисование прямоугольника</span>
+  color=(COLORREF)atoi(data-&gt;CellValue);
+  rdsXGSetPenStyle(<span class="const">0</span>,PS_SOLID,<span class="const">1</span>,data-&gt;FGColor,R2_COPYPEN);
+  rdsXGSetBrushStyle(<span class="const">0</span>,RDS_GFS_SOLID,color);
+  rdsXGRectangle(x,y,x+w,y+h);</pre>
+
+<p>В реакции на нажатие кнопок управления <span class="cpp">RDS_FORMSERVEVENT_TBLBUTTON</span> также проверяется,
+для нужной ли таблицы вызвана реакция, и далее анализируется поле <span class="cpp">Button</span> переданной структуры &ndash;
+в нем записана константа, указывающая на нажатую кнопку.</p>
+
+<p>Если нажата кнопка добавления строки (константа <span class="cpp">RDS_FORMVAL_TBLBTN_ADD</span>), то
+вызывается описанная <a class="hidden" href="#light_ex_subwin">далее</a> функция открытия окна ввода цвета и числа.
+Если пользователь закрыл это окно кнопкой &laquo;OK&raquo;, введенные в него значения записываются в строку
+таблицы, номер которой равен текущему числу строк. Поскольку строка с таким номером находилась бы сразу после
+последней строки, это приводит к добавлению в конец таблицы новой строки. После этого полю переданной структуры
+<span class="cpp">IndexAfterButton</span> присваивается номер этой строки, чтобы текущей в таблице стала
+добавленная строка.</p>
+
+<pre class="cpp">  <span class="rem">// Начальные значения для добавляемой строки</span>
+  color=<span class="const">0xffffff</span>; <span class="rem">// Белый цвет</span>
+  value=<span class="const">0</span>;        <span class="rem">// Выходное значение 0</span>
+  <span class="rem">// Число строк в таблице</span>
+  count=rdsGetObjectInt(win,data-&gt;CtrlId,RDS_FORMVAL_TBLCOUNT);
+  <span class="rem">// Открываем окно для ввода цвета и значения</span>
+  <span class="kw">if</span>(TColorSwitch_EditWin(<span class="str">"Добавление"</span>,&amp;color,&amp;value))
+    { <span class="rem">// Добавление - это установка строки count</span>
+      rdsFORMTBLSetInt(win,data-&gt;CtrlId,count,<span class="const">0</span>,color);
+      rdsFORMTBLSetInt(win,data-&gt;CtrlId,count,<span class="const">1</span>,value);
+      data-&gt;IndexAfterButton=count;
+    }</pre>
+
+<p>Если нажата кнопка редактирования строки (константа <span class="cpp">RDS_FORMVAL_TBLBTN_PROP</span>),
+выполняются похожие действия, только окно ввода цвета и числа открывается со значениями,
+взятыми из текущей строки, а при его закрытии новые значения записываются обратно в текущую строку.
+Номер текущей строки при этом не меняется &ndash; в поле <span class="cpp">IndexAfterButton</span>
+ничего не записывается.</p>
+
+<pre class="cpp">  <span class="rem">// Считываем данные текущей строки</span>
+  color=(COLORREF)rdsFORMTBLGetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">0</span>,NULL);
+  value=rdsFORMTBLGetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">1</span>,NULL);
+  <span class="rem">// Открываем окно для ввода цвета и значения</span>
+  <span class="kw">if</span>(TColorSwitch_EditWin(<span class="str">"Редактирование"</span>,&amp;color,&amp;value))
+    { <span class="rem">// Нажата OK - записываем новые значения в таблицу</span>
+      rdsFORMTBLSetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">0</span>,color);
+      rdsFORMTBLSetInt(win,data-&gt;CtrlId,data-&gt;TableRow,<span class="const">1</span>,value);
+    }</pre>
+
+<p>В реакции на управление разрешением кнопок (константа <span class="cpp">RDS_FORMSERVEVENT_TBLBTNENABLE</span>)
+для нужной таблицы и кнопки удаления строки (<span class="cpp">RDS_FORMVAL_TBLBTN_DEL</span>) кнопка блокируется,
+если в таблице осталась всего одна строка. Для этого в поле <span class="cpp">ButtonResult</span>
+переданной структуры записывается значение <span class="cpp">RDS_FORMSERVRESULT_NO</span>.</p>
+
+<pre class="cpp">  <span class="kw">switch</span>(data-&gt;Button)
+    { <span class="rem">// Кнопка удаления</span>
+      <span class="kw">case</span> RDS_FORMVAL_TBLBTN_DEL:
+        <span class="rem">// Если в таблице осталась только одна строка, запрещаем удаление</span>
+        <span class="kw">if</span>(rdsGetObjectInt(win,data-&gt;CtrlId,RDS_FORMVAL_TBLCOUNT)&lt;<span class="const">2</span>)
+          data-&gt;ButtonResult=RDS_FORMSERVRESULT_NO;
+        <span class="kw">break</span>;
+    }</pre>
+
+<p>Окно, открываемое описанной функцией, выглядит следующим образом:</p>
+
+<div class="pic"><div class="container">
+<img src="img/FormTable_Setup.png" width="300" height="350" alt="Настройки цветного переключателя" />
+</div></div>
+
+<p><span id="light_ex_subwin">Функция редактирования цвета и числа</span>
+<span class="cpp">TColorSwitch_EditWin</span> не содержит ничего, связанного с таблицами. Подобные функции
+неоднократно рассматривались в руководстве программиста:</p>
+<pre class="cpp">  <span class="rem">// Функция ввода цвета и значения в отдельном окне</span>
+  BOOL TColorSwitch_EditWin(
+          <span class="kw">char</span> *Caption,    <span class="rem">// Заголовок окна</span>
+          COLORREF *pColor, <span class="rem">// Переменная цвета</span>
+          <span class="kw">int</span> *pValue)      <span class="rem">// Переменная значения</span>
+  { BOOL res;
+    <span class="rem">// Создание окна</span>
+    RDS_HOBJECT win=rdsFORMCreate(FALSE,-<span class="const">1</span>,-<span class="const">1</span>,Caption);
+    <span class="rem">// Поле ввода цвета</span>
+    rdsFORMAddEdit(win,<span class="const">0</span>,<span class="const">2</span>,RDS_FORMCTRL_COLOR,<span class="str">"Цвет полосы: "</span>,<span class="const">80</span>);
+    rdsSetObjectInt(win,<span class="const">2</span>,RDS_FORMVAL_VALUE,*pColor);
+    <span class="rem">// Поле ввода значения</span>
+    rdsFORMAddEdit(win,<span class="const">0</span>,<span class="const">1</span>,RDS_FORMCTRL_EDIT,<span class="str">"Значение выхода: "</span>,<span class="const">80</span>);
+    rdsSetObjectInt(win,<span class="const">1</span>,RDS_FORMVAL_VALUE,*pValue);
+    <span class="rem">// Открытие окна (функция обратного вызова не используется)</span>
+    res=rdsFORMShowModalServ(win,NULL);
+    <span class="kw">if</span>(res) <span class="rem">// Нажата OK</span>
+      { *pColor=(COLORREF)rdsGetObjectInt(win,<span class="const">2</span>,RDS_FORMVAL_VALUE);
+        *pValue=rdsGetObjectInt(win,<span class="const">1</span>,RDS_FORMVAL_VALUE);
+      }
+    <span class="rem">// Уничтожение окна</span>
+    rdsDeleteObject(win);
+    <span class="kw">return</span> res;
+  }
+  <span class="rem">//=========================================</span></pre>
+
+<p>Окно, открываемое этой функцией, выглядит следующим образом:</p>
+
+<div class="pic"><div class="container">
+<img src="img/FormTable_Setup2.png" width="251" height="139" alt="Настройки цветного переключателя" />
+</div></div>
+
+<p>Для блока с этой моделью необходимо задать следующую структуру переменных:</p>
+
+<div class="tablecenter"><div class="tcont">
+<table>
+
+<tr>
+  <th>Имя</th>
+  <th>Тип</th>
+  <th>Вход/выход</th>
+  <th>Пуск</th>
+  <th>Начальное значение</th>
+</tr>
+<tr>
+  <td class="vcenter">Start</td>
+  <td class="center">Сигнал</td>
+  <td class="center">Вход</td>
+  <td class="center">&checkmark;</td>
+  <td class="center">0</td>
+</tr>
+<tr>
+  <td class="vcenter">Ready</td>
+  <td class="center">Сигнал</td>
+  <td class="center">Выход</td>
+  <td></td>
+  <td class="center">0</td>
+</tr>
+<tr>
+  <td class="vcenter">Out</td>
+  <td class="center">int</td>
+  <td class="center">Выход</td>
+  <td></td>
+<td class="center">0</td>
+</tr>
+
+</table>
+</div></div>
+
+<p>После подключения созданной модели к блоку в окне параметров этого блока
+(&sect;2.9.1 описания пользователя) нужно установить следующие значения:</p>
+<ul>
+  <li>вкладка &laquo;Общие&raquo;:
+  <ul>
+    <li>запуск &ndash; по сигналу;</li>
+    <li>двойной щелчок в режиме редактирования &ndash; вызывает функцию настройки;</li>
+  </ul>
+  </li>
+  <li>вкладка &laquo;Внешний вид&raquo;:
+  <ul>
+    <li>внешний вид блока &ndash; определяется функцией DLL;</li>
+    <li>разрешить масштабирование &ndash; включено;</li>
+  </ul>
+  </li>
+  <li>вкладка &laquo;DLL&raquo;:
+  <ul>
+    <li>блок реагирует на мышь &ndash; включено;</li>
+    <li>блок реагирует на движение мыши без нажатия кнопок &ndash; выключено;</li>
+    <li>блок имеет функцию настройки &ndash; включено.</li>
+  </ul>
+  </li>
+</ul>
+
+<p>После этого блок можно будет настроить и протестировать.</p>
+
+<hr />
+</div>
+
+<p class="bottom"><a href="index.html#light_edittable">Назад</a></p>
+
+</body>
+</html>
